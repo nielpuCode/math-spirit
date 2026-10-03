@@ -1,0 +1,54 @@
+<!-- MULTI SETUP — lobby -->
+<section id="screen-multi-setup" hidden class="flex min-h-0 flex-1 flex-col overflow-y-auto overscroll-contain">
+  <div class="mx-auto flex w-full max-w-md flex-col gap-5 px-0 py-4 pb-8 md:max-w-lg md:gap-6 md:py-8">
+    <header class="shrink-0 text-center">
+      <p class="text-xs font-bold uppercase tracking-[0.25em] text-indigo-300/90 md:text-sm">1v1 💀</p>
+      <h2 class="mt-2 text-3xl font-extrabold md:text-4xl">Ego Battle Royale</h2>
+      <p class="mx-auto mt-3 max-w-[32ch] rotate-[-0.8deg] rounded-2xl border border-dashed border-slate-700 bg-slate-900/70 px-4 py-2 text-sm font-bold leading-relaxed text-slate-300 md:max-w-[36ch] md:text-base">
+        Call your already brain-rotted friend here ↓
+      </p>
+    </header>
+
+    <div class="shrink-0 rounded-3xl border border-slate-800/90 bg-slate-900/70 p-5 space-y-4 shadow-xl md:p-6">
+      <p class="text-xs font-bold uppercase tracking-wider text-slate-400 md:text-sm">👑 Be the host</p>
+      <div>
+        <label for="multi-q-count" class="mb-2 block text-sm font-medium text-slate-300">How much suffering?</label>
+        <div class="flex items-center gap-2">
+          <button id="q-minus" type="button"
+            class="h-12 w-12 shrink-0 rounded-2xl border border-slate-700 bg-slate-950 text-2xl font-black text-slate-200 active:bg-slate-900 md:h-14 md:w-14 md:text-3xl">−</button>
+          <input id="multi-q-count" type="number" inputmode="numeric" min="1" max="500" value="10"
+            class="min-w-0 flex-1 rounded-2xl border border-slate-700/80 bg-slate-950/90 px-2 py-3 text-center text-2xl font-extrabold tabular-nums text-sky-100 outline-none transition focus:border-sky-400 focus:ring-2 focus:ring-sky-500/30 md:py-4 md:text-3xl" />
+          <button id="q-plus" type="button"
+            class="h-12 w-12 shrink-0 rounded-2xl border border-slate-700 bg-slate-950 text-2xl font-black text-slate-200 active:bg-slate-900 md:h-14 md:w-14 md:text-3xl">+</button>
+        </div>
+        <p class="mt-2 text-center text-xs font-bold tracking-wider text-slate-500 md:text-sm">Locking in <span id="q-display" class="text-sky-300">10</span> questions of pain</p>
+      </div>
+      <button id="btn-create-room" type="button"
+        class="w-full rounded-2xl bg-gradient-to-b from-cyan-400 to-cyan-600 px-6 py-4 text-xl font-extrabold text-slate-950 shadow-lg shadow-cyan-500/30 transition hover:brightness-110 active:scale-[0.98] md:py-5 md:text-2xl">
+        Spin up the arena 🏟️
+      </button>
+    </div>
+
+    <div class="shrink-0 rounded-3xl border border-slate-800/90 bg-slate-900/70 p-5 space-y-4 shadow-xl md:p-6">
+      <p class="text-xs font-bold uppercase tracking-wider text-slate-400 md:text-sm">🙋 Sneak in</p>
+      <div>
+        <label for="multi-code" class="mb-2 block text-sm font-medium text-slate-300">Secret code</label>
+        <input id="multi-code" type="text" inputmode="text" autocomplete="off" autocapitalize="characters"
+          maxlength="6" placeholder="A3F9K2"
+          class="w-full rounded-2xl border border-slate-700/80 bg-slate-950/90 px-4 py-3 text-2xl font-extrabold tracking-[0.3em] text-amber-200 outline-none transition placeholder:text-slate-600 focus:border-amber-400 focus:ring-2 focus:ring-amber-500/30 md:py-4 md:text-3xl" />
+      </div>
+      <button id="btn-join-room" type="button"
+        class="w-full rounded-2xl bg-gradient-to-b from-amber-400 to-amber-600 px-6 py-4 text-xl font-extrabold text-slate-950 shadow-lg shadow-amber-500/30 transition hover:brightness-110 active:scale-[0.98] md:py-5 md:text-2xl">
+        Barge in 🚪
+      </button>
+    </div>
+
+    <p id="multi-error" class="hidden shrink-0 text-center text-sm font-semibold text-rose-400"></p>
+
+    <button id="btn-multi-back" type="button"
+      class="w-full shrink-0 rounded-2xl border border-slate-700/80 bg-slate-900/60 px-6 py-3 text-lg font-bold text-slate-300 transition hover:border-slate-600 active:scale-[0.98] md:py-4 md:text-xl">
+      Nvm, I'm scared 🏃
+    </button>
+    <div class="h-2 shrink-0" aria-hidden="true"></div>
+  </div>
+</section>

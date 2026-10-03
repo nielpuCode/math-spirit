@@ -4,111 +4,14 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
   <title>Math Sprint</title>
-  <script src="https://cdn.tailwindcss.com"></script>
-  <link rel="preconnect" href="https://fonts.googleapis.com" />
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@500;600;700;800&display=swap" rel="stylesheet" />
-  <style>
-    body {
-      font-family: 'Plus Jakarta Sans', system-ui, sans-serif;
-      background:
-        radial-gradient(1200px 600px at 50% -10%, rgba(56, 189, 248, 0.18), transparent 60%),
-        radial-gradient(800px 400px at 80% 100%, rgba(129, 140, 248, 0.12), transparent 55%),
-        #020617;
-    }
-    @keyframes pop {
-      0% { transform: scale(1); }
-      40% { transform: scale(1.07); }
-      100% { transform: scale(1); }
-    }
-    @keyframes shake {
-      0%, 100% { transform: translateX(0); }
-      20% { transform: translateX(-6px); }
-      40% { transform: translateX(6px); }
-      60% { transform: translateX(-4px); }
-      80% { transform: translateX(4px); }
-    }
-    @keyframes rise {
-      from { opacity: 0; transform: translateY(10px); }
-      to { opacity: 1; transform: translateY(0); }
-    }
-    .anim-pop { animation: pop 0.28s ease; }
-    .anim-shake { animation: shake 0.32s ease; }
-    .anim-rise { animation: rise 0.25s ease; }
-    .op-plus { color: #34d399; }
-    .op-sub { color: #fb7185; }
-    .op-mul { color: #38bdf8; }
-    .op-div { color: #fbbf24; }
-  </style>
+  <link rel="stylesheet" href="/css/style.css" />
 </head>
 <body class="h-full text-slate-100 antialiased overflow-hidden">
-  <main class="mx-auto flex h-full max-h-dvh w-full max-w-lg flex-col overflow-hidden px-4 pt-[max(0.75rem,env(safe-area-inset-top))] pb-[max(1rem,env(safe-area-inset-bottom))]">
-
-    <!-- HOME -->
-    <section id="screen-home" class="flex min-h-0 flex-1 flex-col justify-center gap-6 overflow-y-auto py-4">
-      <header class="shrink-0 text-center">
-        <p class="text-xs font-bold uppercase tracking-[0.25em] text-sky-400/90">2-digit math</p>
-        <h1 class="mt-3 text-5xl font-extrabold tracking-tight text-transparent bg-clip-text bg-gradient-to-b from-white via-slate-100 to-slate-400 sm:text-6xl">
-          Math Sprint
-        </h1>
-        <p class="mt-3 text-slate-400">Big numbers. Fast taps. Tricky answers.</p>
-      </header>
-
-      <div class="shrink-0 rounded-3xl border border-slate-800/90 bg-slate-900/70 p-5 shadow-2xl shadow-sky-950/50 backdrop-blur space-y-5">
-        <div>
-          <label for="q-count" class="mb-2 block text-xs font-bold uppercase tracking-wider text-slate-400">Questions</label>
-          <input id="q-count" type="number" min="1" max="500" value="20"
-            class="w-full rounded-2xl border border-slate-700/80 bg-slate-950/90 px-4 py-3 text-2xl font-extrabold tabular-nums text-sky-100 outline-none transition focus:border-sky-400 focus:ring-2 focus:ring-sky-500/30" />
-        </div>
-        <label class="flex cursor-pointer items-center gap-3 rounded-2xl border border-slate-700/80 bg-slate-950/90 px-4 py-3 transition hover:border-slate-600">
-          <input id="q-infinite" type="checkbox" class="h-5 w-5 rounded accent-sky-400" />
-          <span class="text-lg font-bold text-slate-200">Infinite mode</span>
-        </label>
-        <p class="text-sm leading-relaxed text-slate-500">Finite runs show final score. Infinite shows live score until you stop.</p>
-      </div>
-
-      <button id="btn-play" type="button"
-        class="w-full shrink-0 rounded-2xl bg-gradient-to-b from-sky-400 to-sky-600 px-6 py-5 text-2xl font-extrabold text-slate-950 shadow-lg shadow-sky-500/40 transition hover:brightness-110 active:scale-[0.98] active:brightness-95">
-        Play
-      </button>
-    </section>
-
-    <!-- PLAY -->
-    <section id="screen-play" class="hidden min-h-0 h-[90vh] flex-col justify-between pb-2">
-      <div id="play-meta" class="hidden shrink-0 items-center justify-between gap-3 pb-2">
-        <p id="live-score" aria-live="polite" class="rounded-full bg-slate-900/80 px-3 py-1 text-xs font-bold tabular-nums text-slate-300 ring-1 ring-slate-700/80 sm:text-sm"></p>
-        <button id="btn-stop" type="button"
-          class="shrink-0 rounded-full border border-rose-500/40 bg-rose-500/10 px-4 py-1.5 text-xs font-bold text-rose-300 transition active:bg-rose-500/20">
-          Stop
-        </button>
-      </div>
-
-      <div id="equation"
-        class="anim-rise flex flex-1 min-h-0 min-h-[50%] items-center justify-center overflow-hidden rounded-3xl border border-slate-800 bg-slate-900/50 text-center font-extrabold tabular-nums leading-none text-[clamp(2.5rem,11vw,4.5rem)] shadow-inner shadow-slate-950/60">
-      </div>
-
-      <div id="choices" class="grid w-full min-h-[30%] shrink-0 grid-cols-6 gap-2 pt-2"></div>
-    </section>
-
-    <!-- RESULT -->
-    <section id="screen-result" class="hidden min-h-0 flex-1 flex-col items-center justify-center gap-6 overflow-y-auto py-4 text-center">
-      <p class="text-xs font-bold uppercase tracking-[0.25em] text-sky-400/90">Finished</p>
-      <p id="result-score" class="text-6xl font-extrabold tabular-nums text-transparent bg-clip-text bg-gradient-to-b from-white to-slate-400 sm:text-7xl"></p>
-      <p id="result-detail" class="rounded-full bg-slate-900/80 px-4 py-2 text-lg font-bold text-slate-300 ring-1 ring-slate-700/80"></p>
-      <div class="flex w-full flex-col gap-3">
-        <button id="btn-again" type="button"
-          class="w-full rounded-2xl bg-gradient-to-b from-sky-400 to-sky-600 px-6 py-5 text-2xl font-extrabold text-slate-950 shadow-lg shadow-sky-500/40 transition hover:brightness-110 active:scale-[0.98]">
-          Play again
-        </button>
-        <button id="btn-home" type="button"
-          class="w-full rounded-2xl border border-slate-700/80 bg-slate-900/60 px-6 py-4 text-lg font-bold text-slate-300 transition hover:border-slate-600 hover:bg-slate-900 active:scale-[0.98]">
-          Home
-        </button>
-      </div>
-    </section>
+  <main id="app" class="mx-auto flex h-full max-h-dvh w-full max-w-lg flex-col overflow-hidden px-4 pt-[max(0.75rem,env(safe-area-inset-top))] pb-[max(1rem,env(safe-area-inset-bottom))]">
+    <!-- screens injected by js/main.js from /screens/*.html -->
   </main>
 
-  <script src="js/generator.js"></script>
-  <script src="js/game.js"></script>
+  <script src="https://unpkg.com/peerjs@1.5.4/dist/peerjs.min.js"></script>
+  <script type="module" src="/js/main.js"></script>
 </body>
 </html>

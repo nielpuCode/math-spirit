@@ -1,0 +1,46 @@
+<section id="screen-play" hidden class="flex h-full flex-col justify-between overflow-hidden">
+  <div id="play-meta" class="hidden shrink-0 items-center justify-between gap-3 pb-2">
+    <p id="live-score" aria-live="polite" class="rounded-full bg-slate-900/80 px-3 py-1 text-xs font-bold tabular-nums text-slate-300 ring-1 ring-slate-700/80 sm:text-sm"></p>
+    <div class="flex shrink-0 items-center gap-2">
+      <button id="btn-stop" type="button" hidden
+        class="rounded-full border border-rose-500/40 bg-rose-500/10 px-4 py-1.5 text-xs font-bold text-rose-300 transition active:bg-rose-500/20">
+        Stop
+      </button>
+      <button id="btn-leave-1v1" type="button" hidden
+        class="rounded-full border border-rose-500/40 bg-rose-500/10 px-4 py-1.5 text-xs font-bold text-rose-300 transition active:bg-rose-500/20">
+        Leave
+      </button>
+    </div>
+  </div>
+
+  <div id="multi-bars" hidden class="shrink-0 space-y-2 pb-2">
+    <div class="flex items-center gap-2">
+      <span class="h-3 w-3 shrink-0 rounded-full bg-cyan-400 shadow shadow-cyan-400/50"></span>
+      <span class="w-12 shrink-0 text-xs font-bold text-cyan-300">You</span>
+      <div class="h-3 flex-1 overflow-hidden rounded-full bg-slate-800/90 ring-1 ring-slate-700/80">
+        <div id="bar-you" class="h-full rounded-full bg-gradient-to-r from-cyan-500 to-cyan-300 transition-all duration-300" style="width:0%"></div>
+      </div>
+      <span id="bar-you-score" class="w-20 shrink-0 text-right text-xs font-bold tabular-nums text-slate-300">0✓ 0/0</span>
+    </div>
+    <div class="flex items-center gap-2">
+      <span class="h-3 w-3 shrink-0 rounded-full bg-amber-400 shadow shadow-amber-400/50"></span>
+      <span class="w-12 shrink-0 text-xs font-bold text-amber-300">Friend</span>
+      <div class="h-3 flex-1 overflow-hidden rounded-full bg-slate-800/90 ring-1 ring-slate-700/80">
+        <div id="bar-friend" class="h-full rounded-full bg-gradient-to-r from-amber-500 to-amber-300 transition-all duration-300" style="width:0%"></div>
+      </div>
+      <span id="bar-friend-score" class="w-20 shrink-0 text-right text-xs font-bold tabular-nums text-slate-300">0✓ 0/0</span>
+    </div>
+  </div>
+
+  <p id="friend-answered" hidden class="shrink-0 text-center text-xs font-bold uppercase tracking-wider text-amber-300/90">
+    Friend already answered
+  </p>
+
+  <div class="flex flex-1 min-h-0 flex-col gap-2">
+    <div id="equation"
+      class="anim-rise flex flex-1 min-h-0 items-center justify-center overflow-hidden rounded-3xl border border-slate-800 bg-slate-900/50 text-center font-extrabold tabular-nums leading-none text-[clamp(2.5rem,11vw,4.5rem)] shadow-inner shadow-slate-950/60">
+    </div>
+  
+    <div id="choices" class="grid w-full shrink-0 grid-cols-6 gap-2 pb-2"></div>
+  </div>
+</section>

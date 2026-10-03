@@ -1,0 +1,72 @@
+@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@500;600;700;800&display=swap');
+@import 'tailwindcss';
+
+body {
+  font-family: 'Plus Jakarta Sans', system-ui, sans-serif;
+  background:
+    radial-gradient(1200px 600px at 50% -10%, rgba(56, 189, 248, 0.18), transparent 60%),
+    radial-gradient(800px 400px at 80% 100%, rgba(129, 140, 248, 0.12), transparent 55%),
+    #020617;
+}
+
+@keyframes pop {
+  0% { transform: scale(1); }
+  40% { transform: scale(1.07); }
+  100% { transform: scale(1); }
+}
+@keyframes shake {
+  0%, 100% { transform: translateX(0); }
+  20% { transform: translateX(-6px); }
+  40% { transform: translateX(6px); }
+  60% { transform: translateX(-4px); }
+  80% { transform: translateX(4px); }
+}
+@keyframes rise {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.anim-pop { animation: pop 0.28s ease; }
+.anim-shake { animation: shake 0.32s ease; }
+.anim-rise { animation: rise 0.25s ease; }
+.op-plus { color: #34d399; }
+.op-sub { color: #fb7185; }
+.op-mul { color: #38bdf8; }
+.op-div { color: #fbbf24; }
+
+#room-code {
+  user-select: all;
+  -webkit-user-select: all;
+  cursor: pointer;
+}
+
+#screen-result-1v1.result-win {
+  background:
+    radial-gradient(900px 500px at 50% 0%, rgba(52, 211, 153, 0.28), transparent 60%),
+    radial-gradient(700px 400px at 80% 100%, rgba(16, 185, 129, 0.16), transparent 55%),
+    #020617;
+}
+#screen-result-1v1.result-win #winner-label {
+  color: #34d399;
+  text-shadow: 0 0 40px rgba(52, 211, 153, 0.45);
+}
+
+#screen-result-1v1.result-lose {
+  background:
+    radial-gradient(900px 500px at 50% 0%, rgba(244, 63, 94, 0.32), transparent 60%),
+    radial-gradient(700px 400px at 80% 100%, rgba(225, 29, 72, 0.18), transparent 55%),
+    #020617;
+}
+#screen-result-1v1.result-lose #winner-label {
+  color: #fb7185;
+  text-shadow: 0 0 40px rgba(244, 63, 94, 0.45);
+}
+
+#screen-result-1v1.result-draw {
+  background:
+    radial-gradient(900px 500px at 50% 0%, rgba(251, 191, 36, 0.22), transparent 60%),
+    #020617;
+}
+#screen-result-1v1.result-draw #winner-label {
+  color: #fbbf24;
+}

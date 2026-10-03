@@ -1,0 +1,35 @@
+<!-- MULTI WAIT / READY -->
+<section id="screen-multi-wait" hidden class="flex min-h-0 flex-1 flex-col overflow-y-auto overscroll-contain">
+  <div class="flex flex-1 flex-col items-center justify-center gap-6 py-6 pb-8 text-center">
+    <div id="wait-host" class="hidden w-full space-y-3">
+      <p class="text-xs font-bold uppercase tracking-[0.25em] text-cyan-300/90">Room code</p>
+      <p id="room-code" class="text-6xl font-extrabold tracking-[0.2em] text-cyan-300 tabular-nums sm:text-7xl">------</p>
+      <button id="btn-copy-code" type="button"
+        class="rounded-full border border-slate-700 bg-slate-900/80 px-4 py-1.5 text-xs font-bold text-slate-300 transition hover:border-slate-500">
+        Copy
+      </button>
+      <p id="wait-status" class="text-slate-400">Waiting for opponent…</p>
+    </div>
+
+    <div id="wait-guest" class="hidden w-full space-y-3">
+      <p class="text-xs font-bold uppercase tracking-[0.25em] text-amber-300/90">Joined as guest</p>
+      <p class="text-2xl font-extrabold text-amber-200">You are amber</p>
+      <p id="wait-status-guest" class="text-slate-400">Connecting…</p>
+    </div>
+
+    <div class="flex w-full flex-col items-center gap-3">
+      <button id="btn-ready" type="button" hidden
+        class="w-full max-w-xs rounded-2xl bg-gradient-to-b from-emerald-400 to-emerald-600 px-6 py-4 text-2xl font-extrabold text-slate-950 shadow-lg shadow-emerald-500/30 transition hover:brightness-110 active:scale-[0.98] disabled:opacity-60">
+        Ready
+      </button>
+      <p id="ready-badge" hidden class="rounded-full bg-emerald-500/15 px-4 py-1.5 text-sm font-bold text-emerald-300 ring-1 ring-emerald-500/40">
+        Friend is ready
+      </p>
+    </div>
+
+    <button id="btn-cancel-multi" type="button"
+      class="w-full max-w-xs shrink-0 rounded-2xl border border-rose-500/40 bg-rose-500/10 px-6 py-3 text-lg font-bold text-rose-300 transition active:bg-rose-500/20">
+      Cancel
+    </button>
+  </div>
+</section>
