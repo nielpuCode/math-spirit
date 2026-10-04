@@ -63,7 +63,7 @@ Open **http://localhost:5173**
 5. Lobby shows join count + who is ready; **all players tap Ready** → countdown **3 · 2 · 1**
 6. Same questions on all devices; live bars per player
 7. First answer on a question starts the host's countdown for everyone still on it — timeout locks in as **blank** (no countdown when set to 0: pure own-pace race, but a stalled player stalls the room)
-8. **Standings** = most correct; tie → faster total time
+8. **Standings** = most correct; tie → faster total time. Only an exact tie (same score AND same time) shares 1st — same score with slower time is a clean loss. Every row gets a roast line for its performance (zero-club, speedrunner, bottom frag, mid NPC, slow poke, tiebreak choke, winner, perfect run) — same lines on all screens
 9. If a player drops mid-game they are removed and the rest continue; if the host drops, the room closes after **10s**
 
 ## Project structure

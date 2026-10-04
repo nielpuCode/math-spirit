@@ -13,4 +13,5 @@ await import('./generator.js');
 await import('./names.js');
 await import('./multi.js');
 await import('./party.js');
+await import('./roast.js');
 await import('./game.js');

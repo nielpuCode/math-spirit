@@ -7,7 +7,7 @@
     "dev:host": "vite --host",
     "build": "vite build",
     "preview": "vite preview",
-    "test": "node test/generator.test.mjs && node test/winner.test.mjs && node test/names.test.mjs && node test/party.test.mjs"
+    "test": "node test/generator.test.mjs && node test/winner.test.mjs && node test/names.test.mjs && node test/party.test.mjs && node test/roast.test.mjs"
   },
   "devDependencies": {
     "@tailwindcss/vite": "^4.1.11",

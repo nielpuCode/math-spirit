@@ -5,6 +5,7 @@
   const multiApi = globalThis.MathSprintMulti;
   const namesApi = globalThis.MathSprintNames;
   const partyApi = globalThis.MathSprintParty;
+  const roastApi = globalThis.MathSprintRoast;
   const generateProblem = gen.generateProblem;
   const generateChoices = gen.generateChoices;
   const rankBoard = multiApi.rank;
@@ -516,47 +517,59 @@ btn.className =
     const screen = $('screen-result-1v1');
     screen.classList.remove('result-win', 'result-lose', 'result-draw');
 
-    const me = board.filter(function (p) { return p.id === multiState.me; })[0];
     const first = board[0] || { name: 'Nobody', correct: 0, ms: 0 };
-    const winners = board.filter(function (p) { return p.correct === first.correct; });
-    const iWon = !!me && me.correct === first.correct;
-    const myPos = me ? board.indexOf(me) + 1 : board.length;
+    // Strict tie lives in roast.headline: same score AND same time only.
+    const head = roastApi && roastApi.headline
+      ? roastApi.headline(board, multiState.me)
+      : { title: '#' + board.length + ' · ' + first.name + ' wins', cls: 'result-lose', note: '' };
+    screen.classList.add(head.cls);
 
-    let title;
-    if (iWon && winners.length === 1) {
-      title = 'You Win!';
-      screen.classList.add('result-win');
-    } else if (iWon) {
-      title = 'Tie for 1st!';
-      screen.classList.add('result-draw');
-    } else {
-      title = '#' + myPos + ' · ' + first.name + ' wins';
-      screen.classList.add('result-lose');
-    }
-
-    $('winner-label').textContent = title;
+    $('winner-label').textContent = head.title;
     const list = $('r1-standings');
     list.replaceChildren();
     for (let i = 0; i < board.length; i++) {
       const p = board[i];
       const you = p.id === multiState.me;
       const row = document.createElement('li');
-      row.className = 'flex items-center justify-between gap-3 rounded-2xl border-2 border-[#12100E] px-4 py-3 shadow-[0_3px_0_#12100E] ' + (you
+      row.className = 'flex flex-col gap-1 rounded-2xl border-2 border-[#12100E] px-4 py-3 shadow-[0_3px_0_#12100E] ' + (you
   ? 'bg-[#29B6F6]/20 text-[#29B6F6]'
   : 'bg-[#0D1117] text-[#FFF7EB]');
+      const top = document.createElement('div');
+      top.className = 'flex items-center justify-between gap-3';
       const left = document.createElement('span');
       left.className = 'truncate font-bold ' + (you ? 'text-cyan-300' : 'text-slate-200');
       left.textContent = '#' + (i + 1) + ' ' + p.name + (you ? ' (you)' : '');
       const right = document.createElement('span');
       right.className = 'shrink-0 text-right font-extrabold tabular-nums text-slate-100';
       right.textContent = p.correct + '✓ · ' + formatMs(p.ms);
-      row.appendChild(left);
-      row.appendChild(right);
+      top.appendChild(left);
+      top.appendChild(right);
+      row.appendChild(top);
+      if (roastApi && roastApi.pick) {
+        const roast = roastApi.pick({
+          id: p.id,
+          correct: p.correct,
+          answered: p.answered,
+          ms: p.ms,
+          rank: i + 1,
+          players: board.length,
+          total: multiState.limit,
+          firstCorrect: first.correct,
+        });
+        const cap = document.createElement('p');
+        cap.className = 'text-[11px] font-bold leading-snug text-slate-400';
+        const capTitle = document.createElement('span');
+        capTitle.className = 'font-black uppercase tracking-wide text-[#F5A623]';
+        capTitle.textContent = roast.title;
+        const capLine = document.createElement('span');
+        capLine.textContent = ' — ' + roast.line;
+        cap.appendChild(capTitle);
+        cap.appendChild(capLine);
+        row.appendChild(cap);
+      }
       list.appendChild(row);
     }
-    $('r1-note').textContent = board.length > 1
-      ? (winners.length > 1 ? 'Tie on score — faster time wins' : 'Most correct wins')
-      : '';
+    $('r1-note').textContent = head.note;
     showScreen('result-1v1');
   }
 
@@ -799,9 +812,8 @@ btn.className =
       $('disconnect-count').textContent = String(Math.max(0, n));
       if (n <= 0) {
         clearDisconnect();
-        cleanupMulti();
+        enterMultiSetup(); // re-rolls an unsaved random name
         showMultiError('Room closed.');
-        showScreen('multi-setup');
       }
     }, 1000);
   }
@@ -956,9 +968,8 @@ btn.className =
       if (!multiState) return;
       const from = data && data.from;
       if (from === 'host' && multiState.role === 'guest') {
-        cleanupMulti();
+        enterMultiSetup(); // re-rolls an unsaved random name
         showMultiError('Room closed.');
-        showScreen('multi-setup');
         return;
       }
       if (multiState.role !== 'host') return;
@@ -988,9 +999,8 @@ btn.className =
         return;
       }
       if (multiState.phase === 'lobby') {
-        cleanupMulti();
+        enterMultiSetup(); // re-rolls an unsaved random name
         showMultiError('Connection lost. Room closed.');
-        showScreen('multi-setup');
         return;
       }
       startDisconnectGrace();
@@ -1004,9 +1014,8 @@ btn.className =
           : code === 'room-full'
             ? 'Room is full. Ask the host for a new room.'
             : 'Connection error: ' + (code || 'unknown');
-        cleanupMulti();
+        enterMultiSetup(); // re-rolls an unsaved random name
         showMultiError(msg);
-        showScreen('multi-setup');
         return;
       }
       const map = {
@@ -1032,9 +1041,8 @@ btn.className =
         return;
       }
       if (multiState && multiState.phase === 'lobby' && multiState.role === 'guest') {
-        cleanupMulti();
+        enterMultiSetup(); // re-rolls an unsaved random name
         showMultiError(msg);
-        showScreen('multi-setup');
         return;
       }
       showMultiError(msg);
