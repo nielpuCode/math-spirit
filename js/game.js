@@ -22,6 +22,8 @@
 
   let timer = null;
   let graceTimer = null;
+  let goTimer = null; // GO! flash timeout inside beginCountdown
+  const GO_MS = 600;
   let locked = false;
   let mode = 'fixed';
   let limit = 10;
@@ -117,6 +119,14 @@
       disconnectTimer = null;
     }
     $('overlay-disconnect').classList.add('hidden');
+    $('overlay-disconnect').hidden = true;
+  }
+
+  function clearGo() {
+    if (goTimer !== null) {
+      clearTimeout(goTimer);
+      goTimer = null;
+    }
   }
 
   function clampCount(value, min, max, fallback) {
@@ -525,6 +535,12 @@ btn.className =
     screen.classList.add(head.cls);
 
     $('winner-label').textContent = head.title;
+    const homeBtn = $('btn-1v1-home');
+    if (homeBtn) {
+      homeBtn.textContent = board.length > 0 && board[0].id === multiState.me
+        ? "Let's Go Home, Winner... 🏆"
+        : "Let's Go Home, Loser... 💀";
+    }
     const list = $('r1-standings');
     list.replaceChildren();
     for (let i = 0; i < board.length; i++) {
@@ -700,6 +716,7 @@ btn.className =
 
     const othersReady = partyApi.size(multiState.party) >= 2 && waiting.length === 0 && !multiState.myReady;
     badge.classList.toggle('hidden', !othersReady);
+    badge.hidden = !othersReady;
 
     if (both) status.textContent = 'Everyone ready — starting…';
     else if (multiState.role === 'host' && partyApi.size(multiState.party) < 2 && !multiState.connOpen) {
@@ -771,7 +788,10 @@ btn.className =
     $('choices').replaceChildren();
     $('equation').textContent = '…';
     hidePeerAlert();
-    $('overlay-countdown').classList.remove('hidden');
+    clearGo();
+    const cdOverlay = $('overlay-countdown');
+    cdOverlay.classList.remove('hidden');
+    cdOverlay.hidden = false;
     $('countdown-num').textContent = '3';
 
     // Local duration, not a host timestamp: phone clocks differ by seconds,
@@ -781,20 +801,34 @@ btn.className =
       const left = deadline - Date.now();
       if (left <= 0) {
         clearInterval(tick);
-        $('overlay-countdown').classList.add('hidden');
-        if (!multiState) return;
-        multiState.phase = 'playing';
-        multiState.startTime = Date.now();
-        current = 0;
-        correct = 0;
-        total = 0;
-        locked = false;
-        nextQuestion();
+        if (!multiState) {
+          hideCountdown();
+          return;
+        }
+        $('countdown-num').textContent = 'GO!';
+        goTimer = setTimeout(function () {
+          goTimer = null;
+          hideCountdown();
+          if (!multiState) return;
+          multiState.phase = 'playing';
+          multiState.startTime = Date.now();
+          current = 0;
+          correct = 0;
+          total = 0;
+          locked = false;
+          nextQuestion();
+        }, GO_MS);
       } else {
         const n = Math.min(3, Math.ceil(left / 1000));
         $('countdown-num').textContent = String(Math.max(1, n));
       }
     }, 100);
+  }
+
+  function hideCountdown() {
+    const cdOverlay = $('overlay-countdown');
+    cdOverlay.classList.add('hidden');
+    cdOverlay.hidden = true;
   }
 
   // Guest-only: the host link dropped. Mid-round stragglers are removed, not waited on.
@@ -805,6 +839,7 @@ btn.className =
     if (multiState.phase === 'done') return;
 
     $('overlay-disconnect').classList.remove('hidden');
+    $('overlay-disconnect').hidden = false;
     let n = DISCONNECT_GRACE_MS;
     $('disconnect-count').textContent = String(n);
     disconnectTimer = setInterval(function () {
@@ -821,12 +856,13 @@ btn.className =
   function cleanupMulti() {
     multiState = null;
     clearTimer();
+    clearGo();
     clearGrace();
     clearDisconnect();
     hidePeerAlert();
     multi.leave();
     locked = false;
-    $('overlay-countdown').classList.add('hidden');
+    hideCountdown();
     $('multi-bars').classList.add('hidden');
     $('btn-leave-1v1').hidden = true;
   }
@@ -849,6 +885,7 @@ btn.className =
     resetMultiState(role);
     multiState.phase = 'lobby';
     $('ready-badge').classList.add('hidden');
+    $('ready-badge').hidden = true;
     $('btn-ready').hidden = true;
     $('btn-ready').disabled = false;
     $('btn-ready').textContent = 'Ready';
