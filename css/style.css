@@ -46,6 +46,22 @@ body {
 .anim-shake { animation: shake 0.32s var(--spring); }
 .anim-rise { animation: rise 0.35s var(--spring) both; }
 
+/* Answer flash states. Plain CSS at 0-2-0 specificity so they always beat
+   the base button utilities no matter where Tailwind orders them. */
+.choice-btn.flash-right {
+  background-color: #34D399;
+  color: #12100E;
+  border-color: #12100E;
+  box-shadow: 0 6px 0 #12100E;
+}
+.choice-btn.flash-wrong {
+  background-color: #D72638;
+  color: #FFF7EB;
+  border-color: #12100E;
+  box-shadow: 0 6px 0 #12100E;
+}
+.choice-btn.flash-dim { opacity: 0.3; }
+
 /* Screen-enter reveal: restarts automatically on display:none -> flex.
    Play screen excluded (hands-off critical path). */
 section.flex:not(#screen-play) {

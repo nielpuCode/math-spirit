@@ -417,15 +417,9 @@ btn.className =
       const node = nodes[i];
       node.disabled = true;
       if (Number(node.dataset.value) === problem.answer) {
-        node.classList.add(
-          'anim-pop',
-          'border-[#12100E]',
-          'bg-[#29B6F6]',
-          'text-[#12100E]',
-          'shadow-[0_6px_0_#12100E]'
-        );
+        node.classList.add('anim-pop', 'flash-right');
       } else {
-        node.classList.add('opacity-30');
+        node.classList.add('flash-dim');
       }
     }
     if (value === null) {
@@ -437,8 +431,8 @@ btn.className =
         return Number(node.dataset.value) === value;
       })[0];
       if (picked) {
-        picked.classList.remove('opacity-30');
-        picked.classList.add('anim-shake', 'border-[#12100E]', 'bg-[#D72638]', 'text-[#FFF7EB]', 'shadow-[0_6px_0_#12100E]');
+        picked.classList.remove('flash-dim');
+        picked.classList.add('anim-shake', 'flash-wrong');
       }
     }
     return ok;
