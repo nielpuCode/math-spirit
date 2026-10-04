@@ -561,6 +561,8 @@ btn.className =
       top.appendChild(left);
       top.appendChild(right);
       row.appendChild(top);
+      row.classList.add('anim-rise');
+      row.style.animationDelay = (i * 70) + 'ms';
       if (roastApi && roastApi.pick) {
         const roast = roastApi.pick({
           id: p.id,
@@ -685,6 +687,8 @@ btn.className =
       chip.textContent = p.ready ? 'Ready ✓' : 'Waiting';
       row.appendChild(left);
       row.appendChild(chip);
+      row.classList.add('anim-rise');
+      row.style.animationDelay = (i * 50) + 'ms';
       box.appendChild(row);
     }
   }
@@ -803,6 +807,13 @@ btn.className =
     return null;
   }
 
+  function punchCountdown() {
+    const el = $('countdown-num');
+    el.classList.remove('cd-punch');
+    void el.offsetWidth;
+    el.classList.add('cd-punch');
+  }
+
   function beginCountdown() {
     showScreen('play');
     showMultiPlayChrome();
@@ -827,6 +838,7 @@ btn.className =
           return;
         }
         $('countdown-num').textContent = 'GO!';
+        punchCountdown();
         goTimer = setTimeout(function () {
           goTimer = null;
           hideCountdown();
@@ -841,7 +853,11 @@ btn.className =
         }, GO_MS);
       } else {
         const n = Math.min(3, Math.ceil(left / 1000));
-        $('countdown-num').textContent = String(Math.max(1, n));
+        const txt = String(Math.max(1, n));
+        if ($('countdown-num').textContent !== txt) {
+          $('countdown-num').textContent = txt;
+          punchCountdown();
+        }
       }
     }, 100);
   }

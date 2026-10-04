@@ -29,31 +29,33 @@
 
 <!-- RESULT MULTIPLAYER -->
 <section id="screen-result-1v1" hidden
-  class="relative mx-auto flex min-h-0 w-full max-w-md flex-1 flex-col items-center justify-center gap-5 overflow-y-auto px-4 py-4 text-center sm:max-w-xl sm:py-6 md:max-w-2xl">
+  class="relative mx-auto flex min-h-0 w-full max-w-md flex-1 flex-col items-center justify-center gap-5 overflow-y-auto px-4 py-4 text-center sm:max-w-xl sm:py-6 md:max-w-2xl lg:max-w-6xl">
   
-  <p id="winner-label" class="text-4xl font-black text-[#FFF7EB] sm:text-5xl md:text-6xl"></p>
+  <p id="winner-label" class="rise-in stagger-1 text-4xl font-black text-[#FFF7EB] sm:text-5xl md:text-6xl"></p>
 
-  <div class="w-full space-y-3 rounded-3xl border-4 border-[#12100E] bg-[#161D27] p-5 shadow-[0_8px_0_#12100E] sm:p-6">
+  <div class="bezel rise-in stagger-2 w-full">
+  <div class="halftone w-full space-y-3 rounded-3xl border-4 border-[#12100E] bg-[#161D27] p-5 shadow-[0_8px_0_#12100E] sm:p-6">
     <p class="border-b-2 border-[#12100E] pb-2 text-xs font-black uppercase tracking-wider text-[#F5A623]">
       Final Damage Rankings
     </p>
-    <ol id="r1-standings" class="w-full space-y-2 text-left"></ol>
+    <ol id="r1-standings" class="w-full space-y-2 text-left lg:grid lg:grid-cols-2 lg:gap-3 lg:space-y-0"></ol>
     <p id="r1-note" class="pt-2 text-xs font-bold text-slate-400"></p>
+  </div>
   </div>
 
   <button id="btn-1v1-rematch" type="button"
-    class="w-full rounded-2xl border-4 border-[#12100E] bg-[#FF5A1F] px-6 py-4 text-xl font-black text-[#12100E] shadow-[0_6px_0_#12100E] transition hover:brightness-110 active:translate-y-1 active:shadow-[0_1px_0_#12100E] sm:text-2xl">
+    class="rise-in stagger-3 w-full rounded-2xl border-4 border-[#12100E] bg-[#FF5A1F] px-6 py-4 text-xl font-black text-[#12100E] shadow-[0_6px_0_#12100E] transition hover:brightness-110 active:translate-y-1 active:shadow-[0_1px_0_#12100E] sm:text-2xl lg:mx-auto lg:max-w-xl">
     BACK TO ROOM 🔄
   </button>
   <button id="btn-1v1-home" type="button"
-    class="w-full rounded-2xl border-4 border-[#12100E] bg-[#29B6F6] px-6 py-4 text-xl font-black text-[#12100E] shadow-[0_6px_0_#12100E] transition hover:brightness-110 active:translate-y-1 active:shadow-[0_1px_0_#12100E] sm:text-2xl">
+    class="rise-in stagger-3 w-full rounded-2xl border-4 border-[#12100E] bg-[#29B6F6] px-6 py-4 text-xl font-black text-[#12100E] shadow-[0_6px_0_#12100E] transition hover:brightness-110 active:translate-y-1 active:shadow-[0_1px_0_#12100E] sm:text-2xl lg:mx-auto lg:max-w-xl">
     Let's Go Home 🏆
   </button>
 </section>
 
 <!-- FULLSCREEN COUNTDOWN OVERLAY -->
 <div id="overlay-countdown" hidden class="fixed inset-0 z-50 flex flex-col items-center justify-center bg-[#0D1117]/95 backdrop-blur-md">
-  <p class="text-sm font-black uppercase tracking-[0.3em] text-[#FF5A1F] animate-pulse">Defuse or Detonate</p>
+  <p class="text-sm font-black uppercase tracking-[0.3em] text-[#FF5A1F] animate-pulse text-center">Go Ahead And Use Your Brain This Time!</p>
   <p id="countdown-num" class="text-[9rem] font-black tabular-nums text-[#FFF7EB] drop-shadow-[0_8px_0_#12100E] sm:text-[11rem]">
     3
   </p>
@@ -69,7 +71,7 @@
     10
   </p>
   <p class="max-w-xs text-xs font-bold text-slate-400 sm:text-sm">
-    Returning to lobby before you combust in loneliness...
+    Go back to the lobby before you embarrass yourself
   </p>
   <button id="btn-dc-home" type="button"
     class="mt-2 rounded-2xl border-2 border-[#12100E] bg-[#161D27] px-6 py-3 font-black text-[#FFF7EB] shadow-[0_3px_0_#12100E] transition hover:bg-[#0D1117]">

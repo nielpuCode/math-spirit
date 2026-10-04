@@ -1,9 +1,9 @@
 <!-- MULTI SETUP / LOBBY -->
 <section id="screen-multi-setup" hidden class="relative flex min-h-0 w-full flex-1 flex-col overflow-y-auto overscroll-contain p-0">
-  <div class="mx-auto flex w-full max-w-md flex-col gap-4 sm:max-w-xl sm:gap-5 md:max-w-2xl lg:max-w-3xl pb-10">
+  <div class="mx-auto flex w-full max-w-md flex-col gap-4 sm:max-w-xl sm:gap-5 md:max-w-2xl lg:max-w-6xl pb-10">
 
     <!-- Header -->
-    <header class="shrink-0 text-center">
+    <header class="rise-in stagger-1 shrink-0 text-center">
       <span class="inline-block -rotate-2 rounded-full border-2 border-[#12100E] bg-[#D72638] px-3 py-1 text-xs font-black uppercase tracking-wider text-[#FFF7EB] shadow-[0_3px_0_#12100E]">
         Squad Carnage
       </span>
@@ -16,7 +16,7 @@
     </header>
 
     <!-- Player Profile Tag -->
-    <div class="shrink-0 rounded-3xl border-4 border-[#12100E] bg-[#161D27] p-4 shadow-[0_6px_0_#12100E] sm:p-5">
+    <div class="rise-in stagger-2 shrink-0 rounded-3xl border-4 border-[#12100E] bg-[#161D27] p-4 shadow-[0_6px_0_#12100E] sm:p-5">
       <label for="player-name" class="mb-2 block text-xs font-black uppercase tracking-wider text-[#F5A623] sm:text-sm">
         Your Display Name
       </label>
@@ -32,10 +32,10 @@
     </div>
 
     <!-- Responsive Split Grid on Tablet/Desktop: Host Box & Join Box -->
-    <div class="grid grid-cols-1 gap-4 md:grid-cols-2 md:gap-5">
+    <div class="rise-in stagger-3 grid grid-cols-1 gap-4 md:grid-cols-2 md:gap-5 lg:grid-cols-5">
       
       <!-- Host Card -->
-      <div class="flex flex-col justify-between rounded-3xl border-4 border-[#12100E] bg-[#161D27] p-4 shadow-[0_6px_0_#12100E] sm:p-5 space-y-4">
+      <div class="flex flex-col justify-between rounded-3xl border-4 border-[#12100E] bg-[#161D27] p-4 shadow-[0_6px_0_#12100E] sm:p-5 space-y-4 lg:col-span-3">
         <div>
           <div class="mb-3 flex items-center justify-between">
             <span class="text-xs font-black uppercase tracking-wider text-[#29B6F6] sm:text-sm">👑 Run the Show</span>
@@ -56,7 +56,7 @@
                 class="h-11 w-11 shrink-0 rounded-2xl border-2 border-[#12100E] bg-[#0D1117] text-2xl font-black text-[#FFF7EB] transition hover:bg-[#FF5A1F] hover:text-[#12100E] active:scale-95 sm:h-12 sm:w-12">+</button>
             </div>
             <p class="mt-1 text-center text-[11px] font-bold text-slate-500">
-              Locking in <span id="q-display" class="font-extrabold text-[#29B6F6]">10</span> rounds
+              Locking in <span id="q-display" class="font-extrabold text-[#29B6F6]">10</span> Questions
             </p>
           </div>
 
@@ -86,7 +86,7 @@
       </div>
 
       <!-- Join Card -->
-      <div class="flex flex-col justify-between rounded-3xl border-4 border-[#12100E] bg-[#161D27] p-4 shadow-[0_6px_0_#12100E] sm:p-5 space-y-4">
+      <div class="flex flex-col justify-between rounded-3xl border-4 border-[#12100E] bg-[#161D27] p-4 shadow-[0_6px_0_#12100E] sm:p-5 space-y-4 lg:col-span-2">
         <div>
           <div class="mb-3 flex items-center justify-between">
             <span class="text-xs font-black uppercase tracking-wider text-[#F5A623] sm:text-sm">🚪 Sneak In</span>

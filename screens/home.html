@@ -1,11 +1,11 @@
 <!-- HOME -->
-<section id="screen-home" class="relative mx-auto flex min-h-0 w-full max-w-md flex-1 flex-col justify-center gap-4 overflow-y-auto p-0 sm:max-w-xl sm:gap-6 md:max-w-2xl lg:max-w-3xl">
+<section id="screen-home" class="relative mx-auto flex min-h-0 w-full max-w-md flex-1 flex-col justify-center gap-4 overflow-y-auto p-0 sm:max-w-xl sm:gap-6 md:max-w-2xl lg:max-w-6xl lg:grid lg:grid-cols-5 lg:items-center lg:gap-10">
   
   <!-- Header / Mascot / Troll Hook -->
-  <header class="shrink-0 text-center">
+  <header class="rise-in stagger-1 shrink-0 text-center lg:col-span-5">
     <div class="relative mx-auto inline-block">
       <img src="/logo.png" alt="TickTickMath mascot"
-        class="mx-auto h-24 w-24 rounded-xl border-4 border-[#12100E] bg-[#161D27] p-1 transition-transform duration-200 hover:rotate-3 sm:h-28 sm:w-28" />
+        class=" mx-auto h-24 w-24 rounded-xl border-4 border-[#12100E] p-1 sm:h-28 sm:w-28 lg:h-32 lg:w-32" />
       <span class="absolute -right-3 -top-2 rotate-12 rounded-full border-2 border-[#12100E] bg-[#FF5A1F] px-2.5 py-0.5 text-[10px] font-black uppercase tracking-wider text-[#FFF7EB] shadow-[0_3px_0_#12100E]">
         BOOM!
       </span>
@@ -24,8 +24,9 @@
     </p>
   </header>
 
-  <!-- Options Card (Parchment Ink Slab) -->
-  <div class="shrink-0 rounded-3xl border-4 border-[#12100E] bg-[#161D27] p-4 shadow-[0_8px_0_#12100E] sm:p-6 md:p-7">
+  <!-- Options Card (Parchment Ink Slab, double-bezel shell) -->
+  <div class="bezel rise-in stagger-2 shrink-0 lg:col-span-3">
+  <div class="halftone rounded-xl border-4 border-[#12100E] bg-[#161D27] p-2 shadow-[0_8px_0_#12100E] sm:p-6 md:p-7">
     <div class="space-y-4 sm:space-y-5">
       <div>
         <div class="mb-2 flex items-center justify-between">
@@ -38,7 +39,7 @@
           class="w-full rounded-2xl border-2 border-[#12100E] bg-[#0D1117] px-4 py-3 text-2xl font-black tabular-nums text-[#FFF7EB] outline-none transition focus:border-[#F5A623] focus:ring-2 focus:ring-[#F5A623]/30 sm:py-3.5 sm:text-3xl" />
       </div>
 
-      <label class="flex cursor-pointer select-none items-center justify-between gap-3 rounded-2xl border-2 border-[#12100E] bg-[#0D1117] px-4 py-3 transition hover:border-slate-600 sm:py-3.5">
+      <label class="flex cursor-pointer select-none items-center justify-between gap-3 rounded-2xl border-2 border-[#12100E] bg-[#0D1117] px-2 py-3 transition hover:border-slate-600 sm:py-3.5">
         <div class="flex items-center gap-3">
           <input id="q-infinite" type="checkbox"
             class="h-6 w-6 rounded-lg border-2 border-[#12100E] accent-[#FF5A1F] transition cursor-pointer" />
@@ -54,9 +55,10 @@
       </p>
     </div>
   </div>
+  </div>
 
   <!-- Primary Action Stack -->
-  <div class="flex shrink-0 flex-col gap-3">
+  <div class="rise-in stagger-3 flex shrink-0 flex-col gap-3 lg:col-span-2">
     <button id="btn-play" type="button"
       class="w-full rounded-2xl border-4 border-[#12100E] bg-[#FF5A1F] px-6 py-4 text-xl font-black text-[#12100E] shadow-[0_6px_0_#12100E] transition hover:brightness-110 active:translate-y-1 active:shadow-[0_2px_0_#12100E] sm:py-5 sm:text-2xl">
       DETONATE SOLO 🧨
@@ -68,7 +70,7 @@
     </button>
   </div>
 
-  <p class="shrink-0 text-center text-xs font-bold text-slate-500">
+  <p class="shrink-0 text-center text-xs font-bold text-slate-500 lg:col-span-5">
     Up to 8 players. Same questions. Zero sign up.
   </p>
 </section>

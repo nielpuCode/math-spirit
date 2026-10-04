@@ -1,9 +1,10 @@
 <!-- MULTI WAIT / READY LOBBY -->
 <section id="screen-multi-wait" hidden class="relative flex min-h-0 w-full flex-1 flex-col overflow-y-auto overscroll-contain px-4 py-4 sm:py-6">
-  <div class="mx-auto flex w-full max-w-md flex-1 flex-col items-center justify-center gap-5 py-4 text-center sm:max-w-xl md:max-w-2xl">
+  <div class="mx-auto flex w-full max-w-md flex-1 flex-col items-center justify-center gap-5 py-4 text-center sm:max-w-xl md:max-w-2xl lg:max-w-6xl lg:grid lg:grid-cols-2 lg:items-stretch">
     
     <!-- Host View Header -->
-    <div id="wait-host" class="hidden w-full space-y-3 rounded-3xl border-4 border-[#12100E] bg-[#161D27] p-5 shadow-[0_6px_0_#12100E] sm:p-6">
+    <div id="wait-host" class="bezel rise-in stagger-1 hidden w-full lg:col-span-1">
+    <div class="w-full space-y-3 rounded-3xl border-4 border-[#12100E] bg-[#161D27] p-5 shadow-[0_6px_0_#12100E] sm:p-6">
       <span class="inline-block rotate-1 rounded-full border-2 border-[#12100E] bg-[#29B6F6] px-3 py-0.5 text-xs font-black uppercase text-[#12100E]">
         Your Room Key
       </span>
@@ -27,9 +28,10 @@
           class="h-9 w-9 shrink-0 rounded-xl border-2 border-[#12100E] bg-[#0D1117] text-xl font-black text-[#FFF7EB] transition hover:bg-[#FF5A1F] hover:text-[#12100E] active:scale-95">+</button>
       </div>
     </div>
+    </div>
 
     <!-- Guest View Header -->
-    <div id="wait-guest" class="hidden w-full space-y-3 rounded-3xl border-4 border-[#12100E] bg-[#161D27] p-5 shadow-[0_6px_0_#12100E] sm:p-6">
+    <div id="wait-guest" class="rise-in stagger-1 hidden w-full space-y-3 rounded-3xl border-4 border-[#12100E] bg-[#161D27] p-5 shadow-[0_6px_0_#12100E] sm:p-6 lg:col-span-1">
       <span class="inline-block -rotate-1 rounded-full border-2 border-[#12100E] bg-[#F5A623] px-3 py-0.5 text-xs font-black uppercase text-[#12100E]">
         Connected to Arena
       </span>
@@ -39,16 +41,18 @@
     </div>
 
     <!-- Active Roster -->
-    <div class="w-full space-y-3 rounded-3xl border-4 border-[#12100E] bg-[#161D27] p-5 shadow-[0_6px_0_#12100E] sm:p-6">
+    <div class="bezel rise-in stagger-2 w-full lg:col-span-1 lg:row-span-2">
+    <div class="halftone w-full space-y-3 rounded-3xl border-4 border-[#12100E] bg-[#161D27] p-5 shadow-[0_6px_0_#12100E] sm:p-6">
       <div class="flex items-center justify-between border-b-2 border-[#12100E] pb-2">
         <span class="text-xs font-black uppercase tracking-wider text-[#F5A623]">Victim Roster</span>
         <p id="player-count" class="text-xs font-black tabular-nums text-slate-300">0 / 8 Joined</p>
       </div>
       <div id="roster" class="flex w-full flex-col gap-2 pt-1 text-left"></div>
     </div>
+    </div>
 
     <!-- Ready / Start Action Box -->
-    <div class="flex w-full flex-col items-center gap-3">
+    <div class="rise-in stagger-3 flex w-full flex-col items-center gap-3 lg:col-span-1">
       <button id="btn-ready" type="button" hidden
         class="w-full rounded-2xl border-4 border-[#12100E] bg-[#29B6F6] px-6 py-4 text-xl font-black text-[#12100E] shadow-[0_6px_0_#12100E] transition hover:brightness-110 active:translate-y-1 active:shadow-[0_1px_0_#12100E] disabled:cursor-not-allowed disabled:opacity-50 sm:text-2xl">
         I AM READY TO EXPLODE 💣
@@ -62,7 +66,7 @@
 
     <!-- Cancel / Exit Button -->
     <button id="btn-cancel-multi" type="button"
-      class="w-full shrink-0 rounded-2xl border-2 border-[#12100E] bg-[#0D1117] px-6 py-3 text-sm font-black text-[#D72638] transition hover:bg-[#D72638] hover:text-[#FFF7EB] active:scale-98">
+      class="w-full shrink-0 rounded-2xl border-2 border-[#12100E] bg-[#0D1117] px-6 py-3 text-sm font-black text-[#D72638] transition hover:bg-[#D72638] hover:text-[#FFF7EB] active:scale-98 lg:col-span-2 lg:mx-auto lg:max-w-md">
       Escape to Safety
     </button>
   </div>
