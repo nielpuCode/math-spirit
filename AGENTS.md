@@ -39,7 +39,7 @@ Pure modules are dual-mode IIFEs: `module.exports = api` for Node, `root.MathSpr
 
 PeerJS 1.5.4 loaded from unpkg via `<script>` in `index.html` — not an npm dep. Message shape is `{ type: '…' }`; `multi.js` re-emits each message as an event named by its `type`. Types: `hello`, `welcome`, `roster`, `ready`, `begin`, `answered`, `left`, `error`. There is no `progress` message — scores derive from per-answer `answered` broadcasts.
 
-- Join: guest sends `hello {name}` on connect; host assigns id + auto-suffixed unique name, replies `welcome {id, name}`, broadcasts `roster` on every join/ready/leave.
+- Join: guest sends `hello {name}` on connect; host assigns id + auto-suffixed unique name, replies `welcome {id, name}`, broadcasts `roster` on every join/ready/leave. `roster` also carries `rounds` (host's question count, adopted by guests for the lobby display).
 - Start: host only, when `allReady()`; `begin {questions, count, grace}`. Countdown is a local duration per client (phone clocks skew, so no shared absolute deadline). `grace` = host's per-question seconds (0–10, 0 = off), clamped on receipt with fallback 3.
 - Race: every answer (incl. host's, with `from` preset) is fanned out; receivers apply scores always (except lobby/done), start the 3s grace only when `data.index === current` and unlocked, and park it in `pendingGrace` if it lands during the 550ms feedback lock (`nextQuestion` picks it up).
 - All names hit the DOM via `textContent` only — never `innerHTML` with a name in it.

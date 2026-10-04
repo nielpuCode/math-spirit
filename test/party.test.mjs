@@ -51,6 +51,17 @@ assert.ok(party.removePlayer(room, 'g1'));
 assert.equal(party.removePlayer(room, 'g1'), false);
 assert.equal(party.size(room), 2);
 
+// rematch zeroes scores and ready flags, keeps identities and seats
+party.resetScores(room);
+assert.equal(room.players.host.answered, 0);
+assert.equal(room.players.host.correct, 0);
+assert.equal(room.players.host.done, false);
+assert.equal(room.players.host.ms, 0);
+assert.equal(room.players.host.ready, false);
+assert.equal(room.players.host.name, 'Thick Lipstick');
+assert.equal(party.size(room), 2);
+assert.equal(party.allReady(room), false);
+
 // cap enforced
 const full = party.createRoom();
 for (let i = 0; i < party.MAX_PLAYERS; i++) party.addPlayer(full, 'p' + i, 'N' + i);

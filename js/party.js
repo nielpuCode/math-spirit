@@ -76,6 +76,20 @@
     return true;
   }
 
+  // Rematch: zero scores and ready flags, keep identities and seats.
+  function resetScores(state) {
+    const ids = Object.keys(state.players);
+    for (let i = 0; i < ids.length; i++) {
+      const p = state.players[ids[i]];
+      p.ready = false;
+      p.answered = 0;
+      p.correct = 0;
+      p.done = false;
+      p.ms = 0;
+    }
+    return state;
+  }
+
   function allDone(state) {
     const ids = Object.keys(state.players);
     if (ids.length === 0) return false;
@@ -126,6 +140,7 @@
     allReady: allReady,
     applyAnswered: applyAnswered,
     allDone: allDone,
+    resetScores: resetScores,
     rosterList: rosterList,
     syncRoster: syncRoster,
   };

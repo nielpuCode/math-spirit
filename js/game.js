@@ -622,6 +622,23 @@ btn.className =
     };
   }
 
+  // Back to the same room: code, seats and identities kept, match reset.
+  // Safe to call from either side in any order; the host broadcast converges.
+  function resetForRematch() {
+    if (!multiState) return;
+    partyApi.resetScores(multiState.party);
+    multiState.phase = 'lobby';
+    multiState.myReady = false;
+    multiState.countdownStarted = false;
+    multiState.localDone = false;
+    multiState.questions = [];
+    multiState.pendingGrace = null;
+    locked = false;
+    if (multiState.role === 'host') broadcastRoster();
+    updateReadyUI();
+    showScreen('multi-wait');
+  }
+
   function showMultiError(msg) {
     const el = $('multi-error');
     el.textContent = msg;
@@ -679,6 +696,7 @@ btn.className =
       players: partyApi.rosterList(multiState.party),
       count: partyApi.size(multiState.party),
       cap: partyApi.MAX_PLAYERS,
+      rounds: multiState.pendingCount,
     });
   }
 
@@ -696,6 +714,8 @@ btn.className =
     if (multiState.role === 'host' && multiState.code) {
       $('room-code').textContent = multiState.code;
     }
+    const rdisp = $('r-display');
+    if (rdisp) rdisp.textContent = String(multiState.pendingCount > 0 ? multiState.pendingCount : (hostQuestionCount || ''));
 
     renderRoom();
 
@@ -718,12 +738,13 @@ btn.className =
     badge.classList.toggle('hidden', !othersReady);
     badge.hidden = !othersReady;
 
+    const roundsTxt = multiState.pendingCount > 0 ? ' · ' + multiState.pendingCount + ' questions' : '';
     if (both) status.textContent = 'Everyone ready — starting…';
     else if (multiState.role === 'host' && partyApi.size(multiState.party) < 2 && !multiState.connOpen) {
       const qn = multiState.pendingCount || hostQuestionCount || '';
       status.textContent = 'Share this code' + (qn ? ' · ' + qn + ' questions' : '') + ' · waiting for players…';
-    } else if (multiState.myReady) status.textContent = 'Waiting for: ' + waitingLabel;
-    else status.textContent = 'Tap Ready · waiting for: ' + waitingLabel;
+    } else if (multiState.myReady) status.textContent = 'Waiting for: ' + waitingLabel + roundsTxt;
+    else status.textContent = 'Tap Ready · waiting for: ' + waitingLabel + roundsTxt;
   }
 
   // Name shown to the room. Only user-typed (or previously saved) names
@@ -966,6 +987,9 @@ btn.className =
     multi.on('roster', function (data) {
       if (!multiState || multiState.role !== 'guest') return;
       partyApi.syncRoster(multiState.party, data.players);
+      if (Number.isFinite(Number(data.rounds))) {
+        multiState.pendingCount = Math.max(1, Math.min(500, Number(data.rounds)));
+      }
       if (multiState.phase === 'lobby') updateReadyUI();
       else {
         renderBars();
@@ -985,6 +1009,9 @@ btn.className =
       if (!multiState || multiState.role !== 'guest') return;
       multiState.questions = data.questions || [];
       multiState.limit = multiState.questions.length;
+      if (Number.isFinite(Number(data.count))) {
+        multiState.pendingCount = Math.max(1, Math.min(500, Number(data.count)));
+      }
       multiState.graceSec = Number.isFinite(Number(data.grace)) ? Math.max(0, Math.min(10, Number(data.grace))) : 3;
       beginCountdown();
     });
@@ -1098,8 +1125,13 @@ btn.className =
     showScreen('home');
   });
   $('btn-1v1-home').addEventListener('click', function () {
+    if (multiState && multiState.role === 'host') multi.send({ type: 'left', from: 'host' });
     cleanupMulti();
     showScreen('home');
+  });
+
+  $('btn-1v1-rematch').addEventListener('click', function () {
+    resetForRematch();
   });
 
   $('btn-multi').addEventListener('click', enterMultiSetup);
@@ -1138,9 +1170,10 @@ btn.className =
       this.value = String(c);
       const disp = $('q-display');
       if (disp) disp.textContent = String(c);
-      if (multiState && multiState.role === 'host' && multiState.phase === 'lobby' && !multiState.connOpen) {
+      if (multiState && multiState.role === 'host' && multiState.phase === 'lobby') {
         multiState.pendingCount = c;
         multiState.limit = c;
+        broadcastRoster();
         updateReadyUI();
       }
     });
@@ -1153,21 +1186,42 @@ btn.className =
     qMinus.addEventListener('click', function () {
       const c = Math.max(1, (hostQuestionCount || readHostCount()) - 1);
       setHostCount(c);
-      if (multiState && multiState.role === 'host' && multiState.phase === 'lobby' && !multiState.connOpen) {
+      if (multiState && multiState.role === 'host' && multiState.phase === 'lobby') {
         multiState.pendingCount = c;
         multiState.limit = c;
+        broadcastRoster();
         updateReadyUI();
       }
     });
     qPlus.addEventListener('click', function () {
       const c = Math.min(500, (hostQuestionCount || readHostCount()) + 1);
       setHostCount(c);
-      if (multiState && multiState.role === 'host' && multiState.phase === 'lobby' && !multiState.connOpen) {
+      if (multiState && multiState.role === 'host' && multiState.phase === 'lobby') {
         multiState.pendingCount = c;
         multiState.limit = c;
+        broadcastRoster();
         updateReadyUI();
       }
     });
+  }
+
+  // Host rounds stepper inside the live lobby (setup screen is gone mid-room).
+  function nudgeLobbyRounds(delta) {
+    if (!multiState || multiState.role !== 'host' || multiState.phase !== 'lobby') return;
+    const base = multiState.pendingCount > 0 ? multiState.pendingCount : (hostQuestionCount || 10);
+    const c = Math.max(1, Math.min(500, base + delta));
+    hostQuestionCount = c;
+    multiState.pendingCount = c;
+    multiState.limit = c;
+    broadcastRoster();
+    updateReadyUI();
+  }
+
+  const rMinus = $('r-minus');
+  const rPlus = $('r-plus');
+  if (rMinus && rPlus) {
+    rMinus.addEventListener('click', function () { nudgeLobbyRounds(-1); });
+    rPlus.addEventListener('click', function () { nudgeLobbyRounds(1); });
   }
 
   const graceInput = $('grace-count');
