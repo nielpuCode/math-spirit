@@ -29,11 +29,11 @@ Consequences:
 
 Pure modules are dual-mode IIFEs: `module.exports = api` for Node, `root.MathSprintX = api` for the browser. A new pure module must follow that pattern to stay testable, and must be added to `main.js` before its consumers.
 
-- `js/generator.js` — problems + distractors. Untouched by multiplayer.
+- `js/generator.js` — problems + distractors. Untouched by multiplayer. Classic 2-digit ops plus real-life kinds (`%`, `off`, `fee`, rupiah `+`/`−`, `÷` split) picked from the `MIX` table (~55/45). Life kinds carry `text`/`sub`/`fmt`/`lang`; money is integer rupiah, percents are integer tenths, discounts round half-up (`pctFinal`). `fmt`/`fmtPct` are locale-correct display formatters (display-only, answers stay numeric).
 - `js/names.js` — nickname list (`NAMES`, append here), `randomName`, `normalize`, `uniqueName`, `loadCustom`/`saveCustom` (localStorage `mathsprint.name`). Only user-typed names are persisted; random defaults never are.
 - `js/party.js` — room state, no DOM, no Peer: roster, ready gate (`allReady` needs ≥2 players), per-answer accumulation, `MAX_PLAYERS = 8`. Host and guest call the same functions — roster logic exists once.
 - `js/multi.js` — transport only, never touches players. Guest = one `conn`; host = `conns` map + `broadcast`/`sendTo`/`relay`/`drop`. Inbound messages get `data.from` stamped (kept if already set, so host relays preserve the origin). `decideWinner` is legacy-kept for its test; N-player standings use `rank()`.
-- `js/game.js` (~1150 lines) — screens, solo flow, multiplayer wiring/render only. Score math lives in `party`/`multi`, not here.
+- `js/game.js` (~1150 lines) — screens, solo flow, multiplayer wiring/render only. Score math lives in `party`/`multi`, not here. Story problems render via `problem.text` (+`paintStoryOps` colors); choice buttons display locale-formatted text, so correctness must always read `dataset.value`, never `textContent`. Question language comes from localStorage `mathsprint.lang` (`id` default).
 
 ## Multiplayer wire protocol (star relay through host)
 

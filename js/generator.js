@@ -74,9 +74,125 @@
     return pick(pairs);
   }
 
-  function generateProblem() {
-    return pick([genAdd, genSub, genMul, genDiv])();
+  function generateProblem(lang) {
+    return pick(MIX)(langOf(lang));
   }
+
+  // ---- Real-life bilingual kinds: percent, discount/fee, rupiah, split ----
+
+  var WORDS = {
+    id: { of: 'dari', percent: 'PERSEN', off: 'DISKON', fee: 'SERVIS', groceries: 'JAJAN', change: 'KEMBALIAN', split: 'PATUNGAN' },
+    en: { of: 'of', percent: 'PERCENT', off: 'DISCOUNT', fee: 'SERVICE', groceries: 'GROCERIES', change: 'CHANGE', split: 'SPLIT BILL' },
+  };
+
+  function langOf(l) {
+    return l === 'en' ? 'en' : 'id';
+  }
+
+  // Display-only grouping, locale-correct: 47623 -> '47.623' (id) / '47,623' (en).
+  function fmt(n, lang) {
+    const sep = langOf(lang) === 'en' ? ',' : '.';
+    const neg = n < 0 ? '-' : '';
+    const digits = String(Math.abs(Math.trunc(n)));
+    let out = '';
+    for (let i = 0; i < digits.length; i++) {
+      if (i > 0 && (digits.length - i) % 3 === 0) out += sep;
+      out += digits[i];
+    }
+    return neg + out;
+  }
+
+  // Percent stored as integer tenths: 125 -> '12,5%' (id) / '12.5%' (en).
+  function fmtPct(tenths, lang) {
+    const dec = langOf(lang) === 'en' ? '.' : ',';
+    const whole = Math.floor(tenths / 10);
+    const frac = tenths % 10;
+    return whole + (frac ? dec + frac : '') + '%';
+  }
+
+  const PCT_TENTHS = [50, 75, 100, 125, 150, 200, 250, 300, 500, 750];
+
+  function genPct(lang) {
+    const L = langOf(lang);
+    const W = WORDS[L];
+    for (let i = 0; i < 60; i++) {
+      const t = pick(PCT_TENTHS);
+      const ans = randInt(6, 240);
+      if ((ans * 1000) % t !== 0) continue;
+      const base = (ans * 1000) / t;
+      if (base < 20 || base > 999) continue;
+      return { op: '%', a: t, b: base, answer: ans, lang: L, fmt: L,
+        text: fmtPct(t, L) + ' ' + W.of + ' ' + fmt(base, L), sub: W.percent };
+    }
+    const ans = randInt(6, 240); // fallback: 50% always divides cleanly
+    return { op: '%', a: 500, b: ans * 2, answer: ans, lang: L, fmt: L,
+      text: fmtPct(500, L) + ' ' + W.of + ' ' + fmt(ans * 2, L), sub: W.percent };
+  }
+
+  function charmPrice() {
+    const r = Math.random();
+    if (r < 0.3) return randInt(2, 250) * 1000 - 1; // 1.999 .. 249.999
+    if (r < 0.55) return randInt(2, 250) * 1000 - 500; // round .500
+    if (r < 0.8) return randInt(10, 2500) * 100; // round hundreds
+    return randInt(1000, 250000); // anything, e.g. 47.623
+  }
+
+  // Cashier rounding in integer math only: half-up to whole rupiah.
+  function pctFinal(price, tenths, down) {
+    const num = down ? 1000 - tenths : 1000 + tenths;
+    return Math.floor((price * num + 500) / 1000);
+  }
+
+  const OFF_TENTHS = [50, 75, 100, 125, 150, 200, 250, 500];
+
+  function genOff(lang) {
+    const L = langOf(lang);
+    const W = WORDS[L];
+    const price = charmPrice();
+    const t = pick(OFF_TENTHS);
+    return { op: 'off', a: price, b: t, answer: pctFinal(price, t, true), lang: L, fmt: L,
+      text: fmt(price, L) + ' −' + fmtPct(t, L), sub: W.off };
+  }
+
+  function genFee(lang) {
+    const L = langOf(lang);
+    const W = WORDS[L];
+    const price = charmPrice();
+    const t = pick(OFF_TENTHS);
+    return { op: 'fee', a: price, b: t, answer: pctFinal(price, t, false), lang: L, fmt: L,
+      text: fmt(price, L) + ' +' + fmtPct(t, L), sub: W.fee };
+  }
+
+  function genRpAdd(lang) {
+    const L = langOf(lang);
+    const W = WORDS[L];
+    const a = randInt(2000, 99999); // text budget: '99.999 + 99.999' = 15 chars
+    const b = randInt(2000, 99999);
+    return { op: '+', a: a, b: b, answer: a + b, lang: L, fmt: L,
+      text: fmt(a, L) + ' + ' + fmt(b, L), sub: W.groceries };
+  }
+
+  function genRpSub(lang) {
+    const L = langOf(lang);
+    const W = WORDS[L];
+    const a = randInt(5000, 99999); // text budget: '99.999 − 99.999' = 15 chars
+    const b = randInt(1000, a);
+    return { op: '−', a: a, b: b, answer: a - b, lang: L, fmt: L,
+      text: fmt(a, L) + ' − ' + fmt(b, L), sub: W.change };
+  }
+
+  function genSplit(lang) {
+    const L = langOf(lang);
+    const W = WORDS[L];
+    const n = randInt(2, 9);
+    const q = randInt(2000, 30000);
+    return { op: '÷', a: n * q, b: n, answer: q, lang: L, fmt: L,
+      text: fmt(n * q, L) + ' ÷ ' + n, sub: W.split };
+  }
+
+  // ~55% classic head-math, ~45% real-life. Tune the ratio here.
+  const MIX = [genAdd, genSub, genMul, genDiv, genAdd, genSub, genMul,
+    genPct, genOff, genFee, genRpAdd, genRpSub, genSplit];
 
   function collectTraps(problem) {
     const a = problem.a;
@@ -118,6 +234,27 @@
         Math.floor(a / (b + 1)),
         Math.floor(a / Math.max(2, b - 1)),
         Math.floor(a / 10),
+      );
+    } else if (op === '%') {
+      raw.push(
+        b - answer, // answered the remainder instead of the percent
+        answer + 10,
+        answer - 10,
+      );
+      if (a % 10 === 0) raw.push(a / 10); // echoed the percent itself
+    } else if (op === 'off') {
+      raw.push(
+        a, // forgot to take the discount
+        a - Math.round(b / 10), // subtracted the percent itself
+        answer + 1000,
+        answer - 1000,
+      );
+    } else if (op === 'fee') {
+      raw.push(
+        a, // forgot to add the fee
+        a - Math.round(b / 10), // subtracted instead of adding
+        answer + 1000,
+        answer - 1000,
       );
     }
 
@@ -164,10 +301,14 @@
 
   const api = {
     OPS: OPS,
+    WORDS: WORDS,
     randInt: randInt,
     pick: pick,
     shuffle: shuffle,
     digitShuffle: digitShuffle,
+    fmt: fmt,
+    fmtPct: fmtPct,
+    pctFinal: pctFinal,
     generateProblem: generateProblem,
     generateChoices: generateChoices,
   };

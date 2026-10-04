@@ -5,6 +5,8 @@ Fast mental-math practice for 2-digit arithmetic. Big type, tight layout, tricky
 ## Features
 
 - **Four operations** — addition, subtraction, multiplication, division
+- **Real-life questions** — percents (`30% dari 90`), discounts (`47.623 −10%`, rounded like a cashier), service fees, rupiah totals, change, split bills (~45% of the mix)
+- **ID/EN toggle** — question language switch on home, remembered on device; locale-correct number formatting (`47.623` vs `47,623`)
 - **Integer-only problems** — division always exact; subtraction may be negative
 - **Tricky answer choices** — common error patterns (carry misses, sign flips, off-by-ten, digit shuffles)
 - **Solo modes** — fixed question count (default 20) or infinite mode with live score

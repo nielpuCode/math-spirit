@@ -20,6 +20,20 @@
   const DISCONNECT_GRACE_MS = 10;
   const OP_CLASS = { '+': 'op-plus', '−': 'op-sub', '×': 'op-mul', '÷': 'op-div' };
 
+  function escapeHtml(s) {
+    return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+  }
+
+  // Story equations ('12,5% dari 80', '47.623 −10%'): same operator colors as
+  // classic problems so symbols always contrast against the numbers.
+  function paintStoryOps(text) {
+    return String(text).split('').map(function (ch) {
+      const cls = ch === '%' ? 'op-div' : OP_CLASS[ch];
+      if (!cls) return escapeHtml(ch);
+      return '<span class="' + cls + '">' + escapeHtml(ch) + '</span>';
+    }).join('');
+  }
+
   let timer = null;
   let graceTimer = null;
   let goTimer = null; // GO! flash timeout inside beginCountdown
@@ -33,6 +47,39 @@
   let hostQuestionCount = 10;
   let hostGraceSec = 3;
   const GRACE_STORE_KEY = 'mathsprint.grace';
+  const LANG_STORE_KEY = 'mathsprint.lang';
+
+  function loadLang() {
+    try {
+      if (typeof localStorage === 'undefined') return 'id';
+      return localStorage.getItem(LANG_STORE_KEY) === 'en' ? 'en' : 'id';
+    } catch (e) {
+      return 'id';
+    }
+  }
+
+  function gameLang() {
+    return loadLang();
+  }
+
+  function applyLang(lang) {
+    const l = lang === 'en' ? 'en' : 'id';
+    try {
+      if (typeof localStorage !== 'undefined') localStorage.setItem(LANG_STORE_KEY, l);
+    } catch (e) {}
+    const idBtn = $('lang-id');
+    const enBtn = $('lang-en');
+    const on = 'border-[#F5A623] bg-[#F5A623]/15 text-[#F5A623]';
+    const off = 'border-slate-700 text-slate-400';
+    if (idBtn) {
+      idBtn.classList.remove('border-[#F5A623]', 'bg-[#F5A623]/15', 'text-[#F5A623]', 'border-slate-700', 'text-slate-400');
+      idBtn.classList.add.apply(idBtn.classList, (l === 'id' ? on : off).split(' '));
+    }
+    if (enBtn) {
+      enBtn.classList.remove('border-[#F5A623]', 'bg-[#F5A623]/15', 'text-[#F5A623]', 'border-slate-700', 'text-slate-400');
+      enBtn.classList.add.apply(enBtn.classList, (l === 'en' ? on : off).split(' '));
+    }
+  }
   let nameEdited = false; // true only while the box holds a user-typed name
 
   const multi = new multiApi.Multi();
@@ -138,13 +185,16 @@
   function buildQuestions(n) {
     const list = [];
     for (let i = 0; i < n; i++) {
-      const p = generateProblem();
+      const p = generateProblem(gameLang());
       list.push({
         a: p.a,
         b: p.b,
         op: p.op,
         answer: p.answer,
         choices: generateChoices(p),
+        text: p.text,
+        sub: p.sub,
+        fmt: p.fmt,
       });
     }
     return list;
@@ -282,6 +332,14 @@ function hidePeerAlert() {
     eq.classList.remove('anim-rise');
     void eq.offsetWidth;
     eq.classList.add('anim-rise');
+    if (problem.text) {
+      eq.replaceChildren();
+      const main = document.createElement('div');
+      main.className = 'text-slate-100';
+      main.innerHTML = paintStoryOps(problem.text);
+      eq.appendChild(main);
+      return;
+    }
     eq.innerHTML =
       '<span class="text-slate-100">' + problem.a + '</span>' +
       ' <span class="' + (OP_CLASS[problem.op] || '') + '">' + problem.op + '</span> ' +
@@ -298,7 +356,8 @@ function hidePeerAlert() {
       const value = list[i];
       const btn = document.createElement('button');
       btn.type = 'button';
-      btn.textContent = String(value);
+      btn.dataset.value = String(value); // raw number: textContent may be locale-formatted
+      btn.textContent = problem.fmt && gen.fmt ? gen.fmt(value, problem.fmt) : String(value);
       // Replace this line inside renderChoices:
 btn.className =
   'choice-btn col-span-2 flex min-h-20 sm:min-h-24 md:min-h-28 items-center justify-center rounded-2xl border-4 border-[#12100E] bg-[#161D27] p-2 sm:p-4 text-[clamp(1.1rem,2.8vw,2rem)] font-black tabular-nums text-[#FFF7EB] shadow-[0_5px_0_#12100E] transition hover:bg-[#0D1117] active:translate-y-1 active:shadow-[0_1px_0_#12100E] disabled:cursor-default disabled:hover:bg-[#161D27]';
@@ -344,7 +403,7 @@ btn.className =
       return;
     }
 
-    const problem = generateProblem();
+    const problem = generateProblem(gameLang());
     renderEquation(problem);
     renderChoices(problem);
     updateLive();
@@ -357,7 +416,7 @@ btn.className =
     for (let i = 0; i < nodes.length; i++) {
       const node = nodes[i];
       node.disabled = true;
-      if (Number(node.textContent) === problem.answer) {
+      if (Number(node.dataset.value) === problem.answer) {
         node.classList.add(
           'anim-pop',
           'border-[#12100E]',
@@ -375,7 +434,7 @@ btn.className =
     }
     if (!ok) {
       const picked = Array.prototype.filter.call(nodes, function (node) {
-        return Number(node.textContent) === value;
+        return Number(node.dataset.value) === value;
       })[0];
       if (picked) {
         picked.classList.remove('opacity-30');
@@ -1135,6 +1194,11 @@ btn.className =
 
   $('btn-play').addEventListener('click', startGame);
   $('btn-again').addEventListener('click', startGame);
+
+  const langIdBtn = $('lang-id');
+  const langEnBtn = $('lang-en');
+  if (langIdBtn) langIdBtn.addEventListener('click', function () { applyLang('id'); });
+  if (langEnBtn) langEnBtn.addEventListener('click', function () { applyLang('en'); });
   $('btn-stop').addEventListener('click', endGame);
   $('btn-home').addEventListener('click', function () {
     cleanupMulti();
@@ -1398,5 +1462,6 @@ btn.className =
     const disp = $('q-display');
     if (disp) disp.textContent = String(v);
     setGraceDur(loadGraceDur(), false);
+    applyLang(loadLang());
   })();
 })();
