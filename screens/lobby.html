@@ -11,19 +11,23 @@
         Ego Slaughterhouse
       </h2>
       <p class="mx-auto mt-2 max-w-[42ch] rounded-2xl border-2 border-dashed border-slate-700 bg-[#161D27]/80 px-4 py-2 text-xs font-bold text-[#F6E6C9]/80 sm:text-sm">
-        Assemble your most confident, illiterate friends and expose their kindergarten arithmetic skills
+        Bring all of your already brain-rotted friends here
       </p>
     </header>
 
     <!-- Player Profile Tag -->
     <div class="shrink-0 rounded-3xl border-4 border-[#12100E] bg-[#161D27] p-4 shadow-[0_6px_0_#12100E] sm:p-5">
       <label for="player-name" class="mb-2 block text-xs font-black uppercase tracking-wider text-[#F5A623] sm:text-sm">
-        What cursed alias should we call you?
+        Your Display Name
       </label>
-      <input id="player-name" type="text" autocomplete="off" maxlength="20" placeholder="Sentient Wet Sock"
-        class="w-full rounded-2xl border-2 border-[#12100E] bg-[#0D1117] px-4 py-3 text-lg font-black text-[#FFF7EB] outline-none transition placeholder:text-slate-600 focus:border-[#29B6F6] focus:ring-2 focus:ring-[#29B6F6]/30 sm:py-3.5 sm:text-xl" />
+      <div class="flex items-center gap-2">
+        <input id="player-name" type="text" autocomplete="off" maxlength="20" placeholder="Sentient Wet Sock"
+          class="min-w-0 flex-1 rounded-2xl border-2 border-[#12100E] bg-[#0D1117] px-4 py-3 text-lg font-black text-[#FFF7EB] outline-none transition placeholder:text-slate-600 focus:border-[#29B6F6] focus:ring-2 focus:ring-[#29B6F6]/30 sm:py-3.5 sm:text-xl" />
+        <button id="btn-reroll-name" type="button" title="Random name again"
+          class="h-12 w-12 shrink-0 rounded-2xl border-2 border-[#12100E] bg-[#0D1117] text-2xl shadow-[0_4px_0_#12100E] transition active:translate-y-0.5 active:shadow-none">🎲</button>
+      </div>
       <p class="mt-2 text-center text-[11px] font-bold text-slate-500">
-        Saved locally / duplicate room names will get humorously butchered by the host
+        Saved on this browser. If two people pick the same name, someone gets numbers added.
       </p>
     </div>
 

@@ -23,13 +23,14 @@
   let graceTimer = null;
   let locked = false;
   let mode = 'fixed';
-  let limit = 20;
+  let limit = 10;
   let current = 0;
   let correct = 0;
   let total = 0;
   let hostQuestionCount = 10;
   let hostGraceSec = 3;
   const GRACE_STORE_KEY = 'mathsprint.grace';
+  let nameEdited = false; // true only while the box holds a user-typed name
 
   const multi = new multiApi.Multi();
   let multiState = null;
@@ -695,15 +696,16 @@ btn.className =
     else status.textContent = 'Tap Ready · waiting for: ' + waitingLabel;
   }
 
-  // Name shown to the room. Typed or previously saved names persist;
-  // a random default is used as-is and never written to storage.
+  // Name shown to the room. Only user-typed (or previously saved) names
+  // persist; random prefill/reroll values are used as-is and never stored.
   function resolveName() {
     const inp = $('player-name');
     const typed = inp && inp.value ? inp.value.trim().slice(0, 20) : '';
     if (typed) {
-      namesApi.saveCustom(typed);
+      const custom = nameEdited || typed === namesApi.loadCustom();
+      if (custom) namesApi.saveCustom(typed);
       inp.value = typed;
-      return { name: typed, typed: true };
+      return { name: typed, typed: custom };
     }
     const saved = namesApi.loadCustom();
     if (saved) return { name: saved, typed: true };
@@ -823,6 +825,7 @@ btn.className =
     $('multi-code').value = '';
     const nameInp = $('player-name');
     if (nameInp) nameInp.value = namesApi.loadCustom() || namesApi.randomName();
+    nameEdited = false;
     if ($('multi-q-count')) $('multi-q-count').value = String(hostQuestionCount);
     const disp = $('q-display');
     if (disp) disp.textContent = String(hostQuestionCount);
@@ -1163,7 +1166,18 @@ btn.className =
     nameInput.addEventListener('change', function () {
       const v = this.value.trim().slice(0, 20);
       this.value = v;
+      nameEdited = v !== '';
       if (v) namesApi.saveCustom(v);
+    });
+  }
+
+  const rerollBtn = $('btn-reroll-name');
+  if (rerollBtn) {
+    rerollBtn.addEventListener('click', function () {
+      const inp = $('player-name');
+      if (!inp) return;
+      inp.value = namesApi.randomName();
+      nameEdited = false;
     });
   }
 

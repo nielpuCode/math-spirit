@@ -56,7 +56,7 @@ Open **http://localhost:5173**
 
 ## How to play (multiplayer)
 
-1. Everyone opens **Play together** and picks a nickname (random funny one pre-filled, saved on device)
+1. Everyone opens **Play together** and picks a nickname (random funny one pre-filled, 🎲 rerolls, saved on device)
 2. Host: set questions (default **10**, range 1–500) and answer pressure (default **3s**, range 0–10, **0 = off**, remembered on device) → **Create room**
 3. Share the **6-character code** (Copy button on host); up to **8 players** can join before the game starts
 4. Guests: enter code → **Join** (name clash? host auto-renames you with a suffix)
