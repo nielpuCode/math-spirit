@@ -33,6 +33,9 @@ assert.ok(js.includes('q-minus'), 'stepper minus');
 assert.ok(js.includes('q-plus'), 'stepper plus');
 assert.ok(js.includes('q-display'), 'display');
 assert.ok(js.includes('readHostCount'), 'readHostCount');
+assert.ok(js.includes('grace-count'), 'grace stepper input');
+assert.ok(js.includes('g-display'), 'grace display');
+assert.ok(js.includes('readGraceDur'), 'readGraceDur');
 console.log('game.js structure ok');
 
 import { readdirSync } from 'node:fs';

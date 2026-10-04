@@ -2,7 +2,7 @@ import assert from 'node:assert/strict';
 import { createRequire } from 'node:module';
 
 const require = createRequire(import.meta.url);
-const { decideWinner, makeCode } = require('../js/multi.js');
+const { decideWinner, makeCode, rank } = require('../js/multi.js');
 
 assert.equal(decideWinner({ correct: 8, ms: 12000 }, { correct: 6, ms: 9000 }), 'a');
 assert.equal(decideWinner({ correct: 5, ms: 12000 }, { correct: 7, ms: 99000 }), 'b');
@@ -18,3 +18,13 @@ assert.equal(code.length, 6);
 assert.match(code, /^[ABCDEFGHJKLMNPQRSTUVWXYZ23456789]{6}$/);
 
 console.log('winner ok');
+
+const board = rank([
+  { id: 'c', name: 'C', correct: 5, ms: 9000 },
+  { id: 'a', name: 'A', correct: 7, ms: 15000 },
+  { id: 'b', name: 'B', correct: 7, ms: 12000 },
+]);
+assert.deepEqual(board.map((p) => p.id), ['b', 'a', 'c']);
+assert.deepEqual(rank([]), []);
+
+console.log('rank ok');

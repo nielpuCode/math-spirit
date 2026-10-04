@@ -1,11 +1,13 @@
-// ponytail: state machine + solo/1v1 UI. Ceiling: no rematch queue, no reconnect, no names.
+// ponytail: state machine + solo/multiplayer UI. Ceiling: no rematch queue, no reconnect, rooms die with host.
 // Upgrade path: rematch handshake; guest reconnect token; persistent settings.
 (function () {
   const gen = globalThis.MathSprintGen;
   const multiApi = globalThis.MathSprintMulti;
+  const namesApi = globalThis.MathSprintNames;
+  const partyApi = globalThis.MathSprintParty;
   const generateProblem = gen.generateProblem;
   const generateChoices = gen.generateChoices;
-  const decideWinner = multiApi.decideWinner;
+  const rankBoard = multiApi.rank;
 
   const $ = function (id) {
     return document.getElementById(id);
@@ -13,10 +15,12 @@
   const SCREENS = ['home', 'play', 'result', 'multi-setup', 'multi-wait', 'result-1v1'];
   const FEEDBACK_MS = 550;
   const COUNTDOWN_MS = 3200;
+  const ANSWER_GRACE_MS = 3000;
   const DISCONNECT_GRACE_MS = 10;
   const OP_CLASS = { '+': 'op-plus', '−': 'op-sub', '×': 'op-mul', '÷': 'op-div' };
 
   let timer = null;
+  let graceTimer = null;
   let locked = false;
   let mode = 'fixed';
   let limit = 20;
@@ -24,6 +28,8 @@
   let correct = 0;
   let total = 0;
   let hostQuestionCount = 10;
+  let hostGraceSec = 3;
+  const GRACE_STORE_KEY = 'mathsprint.grace';
 
   const multi = new multiApi.Multi();
   let multiState = null;
@@ -43,6 +49,45 @@
     if (el) el.value = String(hostQuestionCount);
     const disp = $('q-display');
     if (disp) disp.textContent = String(hostQuestionCount);
+  }
+
+  // Host's per-question pressure timer, seconds. 0 = off (own-pace race).
+  function readGraceDur() {
+    const el = $('grace-count');
+    const raw = el && el.value;
+    const n = Number.parseInt(String(raw).trim(), 10);
+    if (!Number.isFinite(n)) return 3;
+    return Math.max(0, Math.min(10, n));
+  }
+
+  function graceCaption(n) {
+    return n <= 0 ? 'Off · play at your own pace' : n + 's per question · 0 = off';
+  }
+
+  function setGraceDur(n, save) {
+    hostGraceSec = Math.max(0, Math.min(10, Number.isFinite(n) ? n : 3));
+    const el = $('grace-count');
+    if (el) el.value = String(hostGraceSec);
+    const disp = $('g-display');
+    if (disp) disp.textContent = graceCaption(hostGraceSec);
+    if (save !== false) {
+      try {
+        if (typeof localStorage !== 'undefined') localStorage.setItem(GRACE_STORE_KEY, String(hostGraceSec));
+      } catch (e) {}
+    }
+  }
+
+  function loadGraceDur() {
+    try {
+      if (typeof localStorage === 'undefined') return 3;
+      const raw = localStorage.getItem(GRACE_STORE_KEY);
+      if (raw === null || raw === '') return 3;
+      const n = Number.parseInt(String(raw).trim(), 10);
+      if (!Number.isFinite(n)) return 3;
+      return Math.max(0, Math.min(10, n));
+    } catch (e) {
+      return 3;
+    }
   }
 
   function showScreen(name) {
@@ -95,8 +140,8 @@
 
   function updateLive() {
     if (multiState) {
-      if (multiState.phase === 'waiting-opponent') {
-        $('live-score').textContent = 'Waiting for friend…';
+      if (multiState.phase === 'waiting-players') {
+        $('live-score').textContent = 'Waiting for others…';
         return;
       }
       if (multiState.phase === 'playing') {
@@ -112,27 +157,79 @@
     }
   }
 
-  function updateFriendBadge() {
-    const el = $('friend-answered');
-    if (!el) return;
-    if (!multiState || multiState.phase !== 'playing') {
+function hidePeerAlert() {
+    const el = $('peer-alert');
+    if (el) {
       el.classList.add('hidden');
-      return;
+      el.hidden = true; // <--- ADD THIS
     }
-    const show = multiState.opponent.answered > current;
-    el.classList.toggle('hidden', !show);
+    const eq = $('equation');
+    if (eq) eq.style.boxShadow = '';
   }
 
-  function updateMultiBars() {
+  function showPeerAlert(name, seconds) {
+    const el = $('peer-alert');
+    if (!el) return;
+    $('peer-alert-text').textContent = name + ' answered — hurry!';
+    $('peer-alert-num').textContent = String(seconds);
+    const fill = $('peer-alert-fill');
+    if (fill) fill.style.width = '100%';
+    
+    el.classList.remove('hidden');
+    el.hidden = false; // <--- ADD THIS
+    
+    const eq = $('equation');
+    if (eq) eq.style.boxShadow = '0 0 0 2px rgba(251,191,36,.8), 0 0 28px rgba(251,191,36,.35)';
+  }
+
+  function clearGrace() {
+    if (graceTimer !== null) {
+      clearInterval(graceTimer);
+      graceTimer = null;
+    }
+  }
+
+  function renderBars() {
     if (!multiState) return;
-    const totalQ = multiState.limit || 1;
-    const youPct = Math.min(100, Math.round((current / totalQ) * 100));
-    const fr = multiState.opponent;
-    const frPct = Math.min(100, Math.round((fr.answered / totalQ) * 100));
-    $('bar-you').style.width = youPct + '%';
-    $('bar-friend').style.width = frPct + '%';
-    $('bar-you-score').textContent = correct + '✓ ' + current + '/' + totalQ;
-    $('bar-friend-score').textContent = fr.correct + '✓ ' + fr.answered + '/' + totalQ;
+    const box = $('multi-bars');
+    if (!box) return;
+    const lim = multiState.limit || 1;
+    const ids = Object.keys(multiState.party.players);
+    ids.sort(function (a, b) {
+      if (a === multiState.me) return -1;
+      if (b === multiState.me) return 1;
+      return multiState.party.players[b].answered - multiState.party.players[a].answered;
+    });
+    box.replaceChildren();
+    for (let i = 0; i < ids.length; i++) {
+      const p = multiState.party.players[ids[i]];
+      const you = ids[i] === multiState.me;
+      const row = document.createElement('div');
+      row.className = 'flex items-center gap-2';
+      const dot = document.createElement('span');
+      dot.className = 'h-3 w-3 shrink-0 rounded-full ' + (you
+        ? 'bg-cyan-400 shadow shadow-cyan-400/50'
+        : 'bg-amber-400 shadow shadow-amber-400/50');
+      const name = document.createElement('span');
+      name.className = 'w-20 shrink-0 truncate text-xs font-bold ' + (you ? 'text-cyan-300' : 'text-amber-300');
+      name.textContent = (you ? p.name + ' (you)' : p.name) + (p.done ? ' ✓' : '');
+      const track = document.createElement('div');
+      track.className = 'h-3 flex-1 overflow-hidden rounded-full bg-slate-800/90 ring-1 ring-slate-700/80';
+      const fill = document.createElement('div');
+      fill.className = 'h-full rounded-full transition-all duration-300 ' + (you
+        ? 'bg-gradient-to-r from-cyan-500 to-cyan-300'
+        : 'bg-gradient-to-r from-amber-500 to-amber-300');
+      fill.style.width = Math.min(100, Math.round((p.answered / lim) * 100)) + '%';
+      track.appendChild(fill);
+      const score = document.createElement('span');
+      score.className = 'w-16 shrink-0 text-right text-xs font-bold tabular-nums text-slate-300';
+      score.textContent = p.correct + '✓ ' + p.answered + '/' + lim;
+      row.appendChild(dot);
+      row.appendChild(name);
+      row.appendChild(track);
+      row.appendChild(score);
+      box.appendChild(row);
+    }
   }
 
   function showMultiPlayChrome() {
@@ -141,7 +238,7 @@
     $('btn-stop').hidden = true;
     $('btn-leave-1v1').hidden = false;
     $('multi-bars').classList.remove('hidden');
-    updateMultiBars();
+    renderBars();
   }
 
   function showSoloPlayChrome(infinite) {
@@ -183,14 +280,16 @@
   function renderChoices(problem, choiceList) {
     const list = choiceList || problem.choices || generateChoices(problem);
     const box = $('choices');
+    box.classList.remove('anim-shake');
     box.replaceChildren();
     for (let i = 0; i < list.length; i++) {
       const value = list[i];
       const btn = document.createElement('button');
       btn.type = 'button';
       btn.textContent = String(value);
-      btn.className =
-        'choice-btn col-span-2 flex min-h-24 items-center justify-center rounded-2xl border border-slate-700/80 bg-slate-900/90 p-1 text-[clamp(1rem,4.2vw,1.5rem)] font-extrabold tabular-nums text-slate-100 shadow-md shadow-slate-950/40 transition hover:border-slate-500 hover:bg-slate-800 active:scale-[0.97] disabled:cursor-default disabled:hover:border-slate-700/80 disabled:hover:bg-slate-900/90';
+      // Replace this line inside renderChoices:
+btn.className =
+  'choice-btn col-span-2 flex min-h-20 sm:min-h-24 md:min-h-28 items-center justify-center rounded-2xl border-4 border-[#12100E] bg-[#161D27] p-2 sm:p-4 text-[clamp(1.1rem,2.8vw,2rem)] font-black tabular-nums text-[#FFF7EB] shadow-[0_5px_0_#12100E] transition hover:bg-[#0D1117] active:translate-y-1 active:shadow-[0_1px_0_#12100E] disabled:cursor-default disabled:hover:bg-[#161D27]';
       if (i === 3) btn.classList.add('col-start-2');
       if (i === 4) btn.classList.add('col-start-4');
       btn.addEventListener('click', function () {
@@ -202,6 +301,8 @@
 
   function nextQuestion() {
     locked = false;
+    clearGrace();
+    hidePeerAlert();
 
     if (multiState) {
       if (current >= multiState.questions.length) {
@@ -212,8 +313,17 @@
       renderEquation(problem);
       renderChoices(problem);
       updateLive();
-      updateMultiBars();
-      updateFriendBadge();
+      renderBars();
+      if (multiState.pendingGrace) {
+        const pg = multiState.pendingGrace;
+        multiState.pendingGrace = null;
+        if (pg.index === current) maybeStartAnswerGrace(pg);
+      } else {
+        // A rival may have answered this question while I was behind
+        // (slow start, feedback lock): no new message will come, so check now.
+        const ahead = someoneAhead();
+        if (ahead) maybeStartAnswerGrace({ index: current, from: ahead.id });
+      }
       return;
     }
 
@@ -228,31 +338,9 @@
     updateLive();
   }
 
-  function sendProgress(doneFlag) {
-    if (!multiState) return;
-    const ms = multiState.startTime ? Date.now() - multiState.startTime : 0;
-    multi.send({
-      type: 'progress',
-      answered: current,
-      correct: correct,
-      done: !!doneFlag,
-      ms: ms,
-      index: current,
-    });
-    updateMultiBars();
-    updateFriendBadge();
-  }
-
-  function onAnswer(btn, value, problem) {
-    if (locked) return;
-    locked = true;
-    clearTimer();
-
-    total += 1;
-    current += 1;
+  // value may be null (timed-out blank): reveal the answer, no pick highlighted.
+  function paintChoices(problem, value) {
     const ok = value === problem.answer;
-    if (ok) correct += 1;
-
     const nodes = $('choices').querySelectorAll('button');
     for (let i = 0; i < nodes.length; i++) {
       const node = nodes[i];
@@ -260,35 +348,74 @@
       if (Number(node.textContent) === problem.answer) {
         node.classList.add(
           'anim-pop',
-          'border-emerald-400',
-          'bg-emerald-500',
-          'text-slate-950',
-          'shadow-lg',
-          'shadow-emerald-500/40',
+          'border-[#12100E]',
+          'bg-[#29B6F6]',
+          'text-[#12100E]',
+          'shadow-[0_6px_0_#12100E]'
         );
       } else {
-        node.classList.add('opacity-40');
+        node.classList.add('opacity-30');
       }
+    }
+    if (value === null) {
+      $('choices').classList.add('anim-shake');
+      return ok;
     }
     if (!ok) {
-      btn.classList.remove('opacity-40');
-      btn.classList.add('anim-shake', 'border-rose-500', 'bg-rose-600/90', 'text-white');
+      const picked = Array.prototype.filter.call(nodes, function (node) {
+        return Number(node.textContent) === value;
+      })[0];
+      if (picked) {
+        picked.classList.remove('opacity-30');
+        picked.classList.add('anim-shake', 'border-[#12100E]', 'bg-[#D72638]', 'text-[#FFF7EB]', 'shadow-[0_6px_0_#12100E]');
+      }
     }
+    return ok;
+  }
+
+  function commitMultiAnswer(ok, blank) {
+    const lim = multiState.limit || multiState.questions.length || 0;
+    const finished = lim > 0 && current >= lim;
+    const ms = multiState.startTime ? Date.now() - multiState.startTime : 0;
+    const msg = {
+      type: 'answered',
+      index: current - 1,
+      correct: !!ok,
+      blank: !!blank,
+      done: finished,
+      ms: ms,
+      from: multiState.me,
+    };
+    multiState.pendingGrace = null;
+    partyApi.applyAnswered(multiState.party, multiState.me, msg);
+    multi.send(msg); // guest -> host, host -> broadcast to all guests
+    renderBars();
+    updateLive();
+    hidePeerAlert();
+    if (finished) {
+      finishLocalQuestions();
+      return;
+    }
+    timer = setTimeout(function () {
+      timer = null;
+      nextQuestion();
+    }, FEEDBACK_MS);
+  }
+
+  function onAnswer(btn, value, problem) {
+    if (locked) return;
+    locked = true;
+    clearTimer();
+    clearGrace();
+
+    total += 1;
+    current += 1;
+    const ok = value === problem.answer;
+    if (ok) correct += 1;
+    paintChoices(problem, value);
 
     if (multiState) {
-      const lim = multiState.limit || multiState.questions.length || 0;
-      const finished = lim > 0 && current >= lim;
-      sendProgress(finished);
-      updateLive();
-      updateFriendBadge();
-      if (finished) {
-        finishLocalQuestions();
-        return;
-      }
-      timer = setTimeout(function () {
-        timer = null;
-        nextQuestion();
-      }, FEEDBACK_MS);
+      commitMultiAnswer(ok, false);
       return;
     }
 
@@ -300,14 +427,72 @@
     }, FEEDBACK_MS);
   }
 
+  // Effective pressure timer in ms. Host's setting, relayed in `begin`;
+  // 0 means the host turned the countdown off (own-pace race).
+  function graceTotalMs() {
+    const sec = multiState && Number.isFinite(multiState.graceSec) ? multiState.graceSec : ANSWER_GRACE_MS / 1000;
+    return Math.max(0, Math.min(10, sec)) * 1000;
+  }
+
+  // Someone else answered first: countdown to answer or this question locks in as blank.
+  function maybeStartAnswerGrace(data) {
+    if (!multiState || multiState.phase !== 'playing') return;
+    if (graceTimer !== null) return;
+    if (!data || data.index !== current) return;
+    if (graceTotalMs() <= 0) return;
+    // Answered during my own feedback lock: the message is for the question
+    // already on screen, so park it and start the countdown right after render.
+    if (locked) {
+      multiState.pendingGrace = { index: data.index, from: data.from };
+      return;
+    }
+    const p = multiState.party.players[data.from];
+    const name = p ? p.name : 'Someone';
+    const total = graceTotalMs();
+    const deadline = Date.now() + total;
+    showPeerAlert(name, Math.ceil(total / 1000));
+    graceTimer = setInterval(function () {
+      const left = deadline - Date.now();
+      if (left <= 0) {
+        clearGrace();
+        forceBlank();
+        return;
+      }
+      const num = $('peer-alert-num');
+      if (num) num.textContent = String(Math.ceil(left / 1000));
+      const fill = $('peer-alert-fill');
+      if (fill) fill.style.width = Math.max(0, (left / total) * 100) + '%';
+    }, 100);
+  }
+
+  function forceBlank() {
+    if (!multiState || multiState.phase !== 'playing') return;
+    if (locked) return;
+    locked = true;
+    clearTimer();
+    clearGrace();
+    hidePeerAlert();
+    const problem = multiState.questions[current];
+    if (!problem) return;
+    total += 1;
+    current += 1;
+    paintChoices(problem, null);
+    commitMultiAnswer(false, true);
+  }
+
   function finishLocalQuestions() {
     if (!multiState || multiState.localDone) return;
     multiState.localDone = true;
-    multiState.phase = 'waiting-opponent';
+    multiState.phase = 'waiting-players';
     locked = true;
-    sendProgress(true);
     updateLive();
-    if (multiState.opponent.done) end1v1('natural');
+    maybeEndMulti();
+  }
+
+  function maybeEndMulti() {
+    if (!multiState || multiState.phase === 'done') return;
+    if (!partyApi.allDone(multiState.party)) return;
+    endMulti();
   }
 
   function endGame() {
@@ -325,79 +510,85 @@
     return (ms / 1000).toFixed(1) + 's';
   }
 
-  function show1v1Result(winner, youMs, friendMs, note) {
-    const you = { correct: correct, ms: youMs };
-    const friend = {
-      correct: multiState ? multiState.opponent.correct : 0,
-      ms: friendMs,
-    };
+  function showStandings() {
+    const board = rankBoard(partyApi.rosterList(multiState.party));
     const screen = $('screen-result-1v1');
     screen.classList.remove('result-win', 'result-lose', 'result-draw');
 
+    const me = board.filter(function (p) { return p.id === multiState.me; })[0];
+    const first = board[0] || { name: 'Nobody', correct: 0, ms: 0 };
+    const winners = board.filter(function (p) { return p.correct === first.correct; });
+    const iWon = !!me && me.correct === first.correct;
+    const myPos = me ? board.indexOf(me) + 1 : board.length;
+
     let title;
-    if (winner === 'you') {
+    if (iWon && winners.length === 1) {
       title = 'You Win!';
       screen.classList.add('result-win');
-    } else if (winner === 'friend') {
-      title = 'You Lose';
-      screen.classList.add('result-lose');
-    } else {
-      title = 'Draw!';
+    } else if (iWon) {
+      title = 'Tie for 1st!';
       screen.classList.add('result-draw');
+    } else {
+      title = '#' + myPos + ' · ' + first.name + ' wins';
+      screen.classList.add('result-lose');
     }
 
     $('winner-label').textContent = title;
-    $('r1-you-score').textContent = you.correct + ' correct · ' + formatMs(you.ms);
-    $('r1-friend-score').textContent = friend.correct + ' correct · ' + formatMs(friend.ms);
-    $('r1-note').textContent = note || '';
+    const list = $('r1-standings');
+    list.replaceChildren();
+    for (let i = 0; i < board.length; i++) {
+      const p = board[i];
+      const you = p.id === multiState.me;
+      const row = document.createElement('li');
+      row.className = 'flex items-center justify-between gap-3 rounded-2xl border-2 border-[#12100E] px-4 py-3 shadow-[0_3px_0_#12100E] ' + (you
+  ? 'bg-[#29B6F6]/20 text-[#29B6F6]'
+  : 'bg-[#0D1117] text-[#FFF7EB]');
+      const left = document.createElement('span');
+      left.className = 'truncate font-bold ' + (you ? 'text-cyan-300' : 'text-slate-200');
+      left.textContent = '#' + (i + 1) + ' ' + p.name + (you ? ' (you)' : '');
+      const right = document.createElement('span');
+      right.className = 'shrink-0 text-right font-extrabold tabular-nums text-slate-100';
+      right.textContent = p.correct + '✓ · ' + formatMs(p.ms);
+      row.appendChild(left);
+      row.appendChild(right);
+      list.appendChild(row);
+    }
+    $('r1-note').textContent = board.length > 1
+      ? (winners.length > 1 ? 'Tie on score — faster time wins' : 'Most correct wins')
+      : '';
     showScreen('result-1v1');
   }
 
-  function end1v1(reason) {
+  function endMulti() {
     clearTimer();
+    clearGrace();
     clearDisconnect();
-    if (!multiState) return;
+    hidePeerAlert();
+    if (!multiState || multiState.phase === 'done') return;
     multiState.phase = 'done';
     locked = true;
-    const youMs = multiState.startTime ? Date.now() - multiState.startTime : 0;
-    const friend = multiState.opponent;
-
-    if (reason === 'disconnect') {
-      show1v1Result('you', youMs, friend.ms, 'Opponent disconnected');
-      return;
-    }
-
-    const winner = decideWinner(
-      { correct: correct, ms: youMs, done: true },
-      { correct: friend.correct, ms: friend.ms, done: true },
-    );
-    const note =
-      correct === friend.correct
-        ? 'Tie on score — faster time wins'
-        : 'Most correct wins';
-    show1v1Result(winner === 'a' ? 'you' : winner === 'b' ? 'friend' : 'draw', youMs, friend.ms, note);
+    showStandings();
   }
 
   function resetMultiState(role) {
     multiState = {
       role: role,
+      me: '',
+      myName: '',
+      typedName: false,
+      code: '',
       phase: 'lobby',
       questions: [],
       limit: 0,
       pendingCount: 0,
       myReady: false,
-      opponentReady: false,
       countdownStarted: false,
       localDone: false,
+      pendingGrace: null,
+      graceSec: 3,
       startTime: 0,
       connOpen: false,
-      opponent: {
-        answered: 0,
-        correct: 0,
-        done: false,
-        ms: 0,
-        disconnected: false,
-      },
+      party: partyApi.createRoom(),
     };
   }
 
@@ -421,6 +612,46 @@
     el.classList.add('hidden');
   }
 
+  function renderRoom() {
+    if (!multiState) return;
+    const n = partyApi.size(multiState.party);
+    const count = $('player-count');
+    if (count) count.textContent = n + ' / ' + partyApi.MAX_PLAYERS + ' joined';
+    const box = $('roster');
+    if (!box) return;
+    box.replaceChildren();
+    const ids = Object.keys(multiState.party.players);
+    for (let i = 0; i < ids.length; i++) {
+      const p = multiState.party.players[ids[i]];
+      const you = ids[i] === multiState.me;
+      const row = document.createElement('div');
+      row.className = 'flex items-center justify-between gap-3 rounded-2xl border px-4 py-2.5 ' + (you
+        ? 'border-cyan-500/30 bg-cyan-500/10'
+        : 'border-slate-700/60 bg-slate-900/70');
+      const left = document.createElement('span');
+      left.className = 'truncate font-bold ' + (you ? 'text-cyan-200' : 'text-slate-200');
+      left.textContent = p.name + (you ? ' (you)' : '');
+      const chip = document.createElement('span');
+      chip.className = 'shrink-0 rounded-full px-3 py-1 text-xs font-extrabold ' + (p.ready
+        ? 'bg-emerald-500/15 text-emerald-300 ring-1 ring-emerald-500/40'
+        : 'bg-slate-800 text-slate-400 ring-1 ring-slate-700');
+      chip.textContent = p.ready ? 'Ready ✓' : 'Waiting';
+      row.appendChild(left);
+      row.appendChild(chip);
+      box.appendChild(row);
+    }
+  }
+
+  function broadcastRoster() {
+    if (!multiState || multiState.role !== 'host') return;
+    multi.send({
+      type: 'roster',
+      players: partyApi.rosterList(multiState.party),
+      count: partyApi.size(multiState.party),
+      cap: partyApi.MAX_PLAYERS,
+    });
+  }
+
   function updateReadyUI() {
     if (!multiState) return;
     const btn = $('btn-ready');
@@ -436,33 +667,53 @@
       $('room-code').textContent = multiState.code;
     }
 
-    const both = multiState.myReady && multiState.opponentReady;
-    const readyVisible = !!multiState.connOpen && !both;
+    renderRoom();
+
+    const both = partyApi.allReady(multiState.party);
+    const waiting = [];
+    const wids = Object.keys(multiState.party.players);
+    for (let i = 0; i < wids.length; i++) {
+      const wp = multiState.party.players[wids[i]];
+      if (!wp.ready && wids[i] !== multiState.me) waiting.push(wp.name);
+    }
+    const waitingLabel = waiting.length ? waiting.join(', ') : '…';
+
+    const linked = multiState.role === 'host' ? !!multiState.code : multiState.connOpen;
+    const readyVisible = multiState.phase === 'lobby' && linked && !both;
     btn.hidden = !readyVisible;
     btn.disabled = multiState.myReady;
     btn.textContent = multiState.myReady ? 'Waiting…' : 'Ready';
 
-    badge.classList.toggle('hidden', !multiState.opponentReady);
+    const othersReady = partyApi.size(multiState.party) >= 2 && waiting.length === 0 && !multiState.myReady;
+    badge.classList.toggle('hidden', !othersReady);
 
-    if (multiState.role === 'host') {
+    if (both) status.textContent = 'Everyone ready — starting…';
+    else if (multiState.role === 'host' && partyApi.size(multiState.party) < 2 && !multiState.connOpen) {
       const qn = multiState.pendingCount || hostQuestionCount || '';
-      const qLabel = qn ? ' · ' + qn + ' questions' : '';
-      if (both) status.textContent = 'Both ready — starting…';
-      else if (multiState.myReady && !multiState.opponentReady) status.textContent = 'Waiting for friend to tap Ready…';
-      else if (!multiState.myReady && multiState.opponentReady) status.textContent = 'Friend is ready. Tap Ready.';
-      else if (multiState.connOpen) status.textContent = 'Opponent joined. Tap Ready when ready.' + qLabel;
-      else status.textContent = 'Share this code' + qLabel + ' · waiting for opponent…';
-    } else {
-      if (both) status.textContent = 'Both ready — starting…';
-      else if (multiState.myReady && !multiState.opponentReady) status.textContent = 'Waiting for host to tap Ready…';
-      else if (!multiState.myReady && multiState.opponentReady) status.textContent = 'Host is ready. Tap Ready.';
-      else status.textContent = 'Connected. Tap Ready when ready.';
+      status.textContent = 'Share this code' + (qn ? ' · ' + qn + ' questions' : '') + ' · waiting for players…';
+    } else if (multiState.myReady) status.textContent = 'Waiting for: ' + waitingLabel;
+    else status.textContent = 'Tap Ready · waiting for: ' + waitingLabel;
+  }
+
+  // Name shown to the room. Typed or previously saved names persist;
+  // a random default is used as-is and never written to storage.
+  function resolveName() {
+    const inp = $('player-name');
+    const typed = inp && inp.value ? inp.value.trim().slice(0, 20) : '';
+    if (typed) {
+      namesApi.saveCustom(typed);
+      inp.value = typed;
+      return { name: typed, typed: true };
     }
+    const saved = namesApi.loadCustom();
+    if (saved) return { name: saved, typed: true };
+    return { name: namesApi.randomName(), typed: false };
   }
 
   function maybeStartCountdown() {
     if (!multiState) return;
-    if (!multiState.myReady || !multiState.opponentReady) return;
+    if (multiState.role !== 'host') return;
+    if (!partyApi.allReady(multiState.party)) return;
     if (multiState.countdownStarted) return;
     multiState.countdownStarted = true;
     multiState.phase = 'countdown';
@@ -475,30 +726,44 @@
       if ($('multi-q-count')) $('multi-q-count').value = String(count);
       const disp = $('q-display');
       if (disp) disp.textContent = String(count);
-      console.log('[1v1] host start', { count, hostQuestionCount, pendingCount: multiState.pendingCount, input: $('multi-q-count') && $('multi-q-count').value });
       const questions = buildQuestions(count);
       if (questions.length !== count) {
         console.warn('[1v1] build mismatch', questions.length, count);
       }
       multiState.questions = questions;
       multiState.limit = questions.length;
-      const goAt = Date.now() + COUNTDOWN_MS;
-      multi.send({ type: 'begin', questions: questions, goAt: goAt, count: questions.length });
-      beginCountdown(goAt);
+      multi.send({ type: 'begin', questions: questions, count: questions.length, grace: multiState.graceSec });
+      beginCountdown();
     }
   }
 
-  function beginCountdown(goAt) {
+  // Clock skew can put a rival ahead before my countdown ends.
+  // If anyone already answered my current question, start the grace now.
+  function someoneAhead() {
+    if (!multiState) return null;
+    const ids = Object.keys(multiState.party.players);
+    for (let i = 0; i < ids.length; i++) {
+      if (ids[i] === multiState.me) continue;
+      const p = multiState.party.players[ids[i]];
+      if (p.answered > current) return p;
+    }
+    return null;
+  }
+
+  function beginCountdown() {
     showScreen('play');
     showMultiPlayChrome();
     $('choices').replaceChildren();
     $('equation').textContent = '…';
-    $('friend-answered').classList.add('hidden');
+    hidePeerAlert();
     $('overlay-countdown').classList.remove('hidden');
     $('countdown-num').textContent = '3';
 
+    // Local duration, not a host timestamp: phone clocks differ by seconds,
+    // so a shared absolute deadline starts everyone at different times.
+    const deadline = Date.now() + COUNTDOWN_MS;
     const tick = setInterval(function () {
-      const left = goAt - Date.now();
+      const left = deadline - Date.now();
       if (left <= 0) {
         clearInterval(tick);
         $('overlay-countdown').classList.add('hidden');
@@ -511,19 +776,19 @@
         locked = false;
         nextQuestion();
       } else {
-        const n = Math.ceil(left / 1000);
+        const n = Math.min(3, Math.ceil(left / 1000));
         $('countdown-num').textContent = String(Math.max(1, n));
       }
     }, 100);
   }
 
+  // Guest-only: the host link dropped. Mid-round stragglers are removed, not waited on.
   function startDisconnectGrace() {
     if (!multiState) return;
     if (multiState.phase === 'lobby') return;
     if (disconnectTimer !== null) return;
     if (multiState.phase === 'done') return;
 
-    multiState.opponent.disconnected = true;
     $('overlay-disconnect').classList.remove('hidden');
     let n = DISCONNECT_GRACE_MS;
     $('disconnect-count').textContent = String(n);
@@ -532,16 +797,20 @@
       $('disconnect-count').textContent = String(Math.max(0, n));
       if (n <= 0) {
         clearDisconnect();
-        end1v1('disconnect');
+        cleanupMulti();
+        showMultiError('Room closed.');
+        showScreen('multi-setup');
       }
     }, 1000);
   }
 
   function cleanupMulti() {
-    clearTimer();
-    clearDisconnect();
-    multi.leave();
     multiState = null;
+    clearTimer();
+    clearGrace();
+    clearDisconnect();
+    hidePeerAlert();
+    multi.leave();
     locked = false;
     $('overlay-countdown').classList.add('hidden');
     $('multi-bars').classList.add('hidden');
@@ -552,6 +821,8 @@
     cleanupMulti();
     clearMultiError();
     $('multi-code').value = '';
+    const nameInp = $('player-name');
+    if (nameInp) nameInp.value = namesApi.loadCustom() || namesApi.randomName();
     if ($('multi-q-count')) $('multi-q-count').value = String(hostQuestionCount);
     const disp = $('q-display');
     if (disp) disp.textContent = String(hostQuestionCount);
@@ -576,9 +847,13 @@
         resetMultiState('host');
       }
       multiState.role = 'host';
+      multiState.me = 'host';
       multiState.code = code;
       multiState.phase = 'lobby';
-      multiState.connOpen = false;
+      multiState.connOpen = true;
+      if (multiState.myName) {
+        partyApi.addPlayer(multiState.party, 'host', multiState.myName);
+      }
       // do not overwrite pendingCount — it was locked at Create
       if (!multiState.pendingCount) {
         const c = hostQuestionCount > 0 ? hostQuestionCount : readHostCount();
@@ -594,26 +869,62 @@
       $('wait-guest').classList.add('hidden');
       showScreen('multi-wait');
       updateReadyUI();
-      console.log('[1v1] room-ready', { code, pendingCount: multiState.pendingCount, hostQuestionCount, input: $('multi-q-count') && $('multi-q-count').value });
     });
 
     multi.on('connected', function () {
-      if (!multiState) return;
+      if (!multiState || multiState.role !== 'guest') return;
       multiState.connOpen = true;
-      if (multiState.role === 'host') {
-        multiState.opponentReady = false;
-      }
+      multi.send({ type: 'hello', name: multiState.myName });
       updateReadyUI();
     });
 
-    multi.on('joined', function () {
+    multi.on('hello', function (data) {
       if (!multiState || multiState.role !== 'host') return;
+      const from = data && data.from;
+      if (!from || multiState.party.players[from]) {
+        updateReadyUI();
+        return;
+      }
+      if (multiState.phase !== 'lobby') {
+        multi.sendTo(from, { type: 'error', error: 'room-started' });
+        multi.drop(from);
+        return;
+      }
+      if (partyApi.size(multiState.party) >= partyApi.MAX_PLAYERS) {
+        multi.sendTo(from, { type: 'error', error: 'room-full' });
+        multi.drop(from);
+        return;
+      }
+      const finalName = namesApi.uniqueName(data.name, partyApi.names(multiState.party));
+      partyApi.addPlayer(multiState.party, from, finalName);
+      multi.sendTo(from, { type: 'welcome', id: from, name: finalName });
+      broadcastRoster();
       updateReadyUI();
     });
 
-    multi.on('ready', function () {
-      if (!multiState) return;
-      multiState.opponentReady = true;
+    multi.on('welcome', function (data) {
+      if (!multiState || multiState.role !== 'guest') return;
+      multiState.me = data.id;
+      partyApi.addPlayer(multiState.party, data.id, data.name);
+      if (multiState.typedName) namesApi.saveCustom(data.name);
+      const inp = $('player-name');
+      if (inp) inp.value = data.name;
+    });
+
+    multi.on('roster', function (data) {
+      if (!multiState || multiState.role !== 'guest') return;
+      partyApi.syncRoster(multiState.party, data.players);
+      if (multiState.phase === 'lobby') updateReadyUI();
+      else {
+        renderBars();
+        maybeEndMulti();
+      }
+    });
+
+    multi.on('ready', function (data) {
+      if (!multiState || multiState.role !== 'host') return;
+      partyApi.setReady(multiState.party, data.from, true);
+      broadcastRoster();
       updateReadyUI();
       maybeStartCountdown();
     });
@@ -622,46 +933,79 @@
       if (!multiState || multiState.role !== 'guest') return;
       multiState.questions = data.questions || [];
       multiState.limit = multiState.questions.length;
-      beginCountdown(Number(data.goAt) || Date.now() + COUNTDOWN_MS);
+      multiState.graceSec = Number.isFinite(Number(data.grace)) ? Math.max(0, Math.min(10, Number(data.grace))) : 3;
+      beginCountdown();
     });
 
-    multi.on('progress', function (data) {
+    multi.on('answered', function (data) {
       if (!multiState) return;
-      multiState.opponent.answered = Number(data.answered) || 0;
-      multiState.opponent.correct = Number(data.correct) || 0;
-      multiState.opponent.done = !!data.done;
-      multiState.opponent.ms = Number(data.ms) || 0;
-      updateMultiBars();
-      updateFriendBadge();
-      if (multiState.localDone && multiState.opponent.done && multiState.phase !== 'done') {
-        end1v1('natural');
+      const from = data && data.from;
+      if (!from || from === multiState.me) return;
+      if (multiState.phase === 'lobby' || multiState.phase === 'done') return;
+      multi.relay(data, from); // host fans out; guests have a single conn so this is a no-op for them
+      if (!partyApi.applyAnswered(multiState.party, from, data)) return;
+      renderBars();
+      maybeStartAnswerGrace(data); // gates on phase + index internally
+      maybeEndMulti();
+    });
+
+    multi.on('left', function (data) {
+      if (!multiState) return;
+      const from = data && data.from;
+      if (from === 'host' && multiState.role === 'guest') {
+        cleanupMulti();
+        showMultiError('Room closed.');
+        showScreen('multi-setup');
+        return;
+      }
+      if (multiState.role !== 'host') return;
+      multi.drop(from);
+      if (partyApi.removePlayer(multiState.party, from)) {
+        broadcastRoster();
+        if (multiState.phase === 'lobby') updateReadyUI();
+        else {
+          renderBars();
+          maybeEndMulti();
+        }
       }
     });
 
-    multi.on('left', function () {
-      startDisconnectGrace();
-    });
-
-    multi.on('peer-closed', function () {
+    multi.on('peer-closed', function (peerId) {
       if (!multiState) return;
-      if (multiState.phase === 'lobby') {
-        if (multiState.role === 'host') {
-          multiState.myReady = false;
-          multiState.opponentReady = false;
-          multiState.countdownStarted = false;
-          updateReadyUI();
-          $('wait-status').textContent = 'Waiting for opponent…';
-        } else {
-          cleanupMulti();
-          showMultiError('Connection lost. Room closed.');
-          showScreen('multi-setup');
+      if (multiState.role === 'host') {
+        multi.drop(peerId);
+        if (partyApi.removePlayer(multiState.party, peerId)) {
+          broadcastRoster();
+          if (multiState.phase === 'lobby') updateReadyUI();
+          else {
+            renderBars();
+            maybeEndMulti();
+          }
         }
+        return;
+      }
+      if (multiState.phase === 'lobby') {
+        cleanupMulti();
+        showMultiError('Connection lost. Room closed.');
+        showScreen('multi-setup');
         return;
       }
       startDisconnectGrace();
     });
 
     multi.on('error', function (type) {
+      if (type && typeof type === 'object') {
+        const code = type.error;
+        const msg = code === 'room-started'
+          ? 'Game already started. Ask the host for a new room.'
+          : code === 'room-full'
+            ? 'Room is full. Ask the host for a new room.'
+            : 'Connection error: ' + (code || 'unknown');
+        cleanupMulti();
+        showMultiError(msg);
+        showScreen('multi-setup');
+        return;
+      }
       const map = {
         'unavailable-id': 'Room code already in use. Tap Cancel and create again.',
         'peer-unavailable': 'Room not found. Check the code and try again.',
@@ -718,16 +1062,21 @@
 
   $('btn-create-room').addEventListener('click', function () {
     clearMultiError();
-    const rawVal = $('multi-q-count') && $('multi-q-count').value;
     const count = readHostCount();
     hostQuestionCount = count;
-    console.log('[1v1] create click', { rawVal, count, hostQuestionCount });
     if ($('multi-q-count')) $('multi-q-count').value = String(count);
     const disp = $('q-display');
     if (disp) disp.textContent = String(count);
+    const resolved = resolveName();
     enterMultiWait('host');
+    multiState.myName = resolved.name;
+    multiState.typedName = resolved.typed;
+    partyApi.addPlayer(multiState.party, 'host', resolved.name);
+    multiState.me = 'host';
     multiState.pendingCount = count;
     multiState.limit = count;
+    multiState.graceSec = readGraceDur();
+    setGraceDur(multiState.graceSec);
     $('wait-status').textContent = 'Creating room… (' + count + ' questions)';
     updateReadyUI();
     multi.createRoom();
@@ -773,6 +1122,26 @@
     });
   }
 
+  const graceInput = $('grace-count');
+  if (graceInput) {
+    graceInput.addEventListener('change', function () {
+      const g = readGraceDur();
+      setGraceDur(g);
+      this.value = String(hostGraceSec);
+    });
+  }
+
+  const gMinus = $('g-minus');
+  const gPlus = $('g-plus');
+  if (gMinus && gPlus) {
+    gMinus.addEventListener('click', function () {
+      setGraceDur((Number.isFinite(hostGraceSec) ? hostGraceSec : readGraceDur()) - 1);
+    });
+    gPlus.addEventListener('click', function () {
+      setGraceDur((Number.isFinite(hostGraceSec) ? hostGraceSec : readGraceDur()) + 1);
+    });
+  }
+
   $('btn-join-room').addEventListener('click', function () {
     clearMultiError();
     const code = $('multi-code').value.toUpperCase().replace(/[^A-Z0-9]/g, '').slice(0, 6);
@@ -781,10 +1150,22 @@
       showMultiError('Enter a 6-character room code.');
       return;
     }
+    const resolved = resolveName();
     enterMultiWait('guest');
+    multiState.myName = resolved.name;
+    multiState.typedName = resolved.typed;
     $('wait-status-guest').textContent = 'Connecting…';
     multi.joinRoom(code);
   });
+
+  const nameInput = $('player-name');
+  if (nameInput) {
+    nameInput.addEventListener('change', function () {
+      const v = this.value.trim().slice(0, 20);
+      this.value = v;
+      if (v) namesApi.saveCustom(v);
+    });
+  }
 
   $('multi-code').addEventListener('input', function () {
     this.value = this.value.toUpperCase().replace(/[^A-Z0-9]/g, '').slice(0, 6);
@@ -847,9 +1228,15 @@
   $('btn-ready').addEventListener('click', function () {
     if (!multiState || multiState.myReady) return;
     multiState.myReady = true;
-    multi.send({ type: 'ready' });
-    updateReadyUI();
-    maybeStartCountdown();
+    partyApi.setReady(multiState.party, multiState.me, true);
+    if (multiState.role === 'host') {
+      broadcastRoster();
+      updateReadyUI();
+      maybeStartCountdown();
+    } else {
+      multi.send({ type: 'ready' });
+      updateReadyUI();
+    }
   });
 
   $('btn-cancel-multi').addEventListener('click', function () {
@@ -858,13 +1245,15 @@
   });
 
   $('btn-leave-1v1').addEventListener('click', function () {
-    multi.send({ type: 'left' });
+    const me = multiState ? multiState.me : '';
+    multi.send({ type: 'left', from: me || 'host' });
     cleanupMulti();
     showScreen('home');
   });
 
   $('btn-dc-home').addEventListener('click', function () {
-    multi.send({ type: 'left' });
+    const me = multiState ? multiState.me : '';
+    multi.send({ type: 'left', from: me || 'host' });
     cleanupMulti();
     showScreen('home');
   });
@@ -879,5 +1268,6 @@
     if (el) el.value = String(v);
     const disp = $('q-display');
     if (disp) disp.textContent = String(v);
+    setGraceDur(loadGraceDur(), false);
   })();
 })();

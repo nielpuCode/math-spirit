@@ -1,56 +1,74 @@
 <!-- RESULT SOLO -->
-<section id="screen-result" hidden class="flex min-h-0 flex-1 flex-col items-center justify-center gap-6 overflow-y-auto py-4 text-center">
-  <p class="text-xs font-bold uppercase tracking-[0.25em] text-sky-400/90">Finished</p>
-  <p id="result-score" class="text-6xl font-extrabold tabular-nums text-transparent bg-clip-text bg-gradient-to-b from-white to-slate-400 sm:text-7xl"></p>
-  <p id="result-detail" class="rounded-full bg-slate-900/80 px-4 py-2 text-lg font-bold text-slate-300 ring-1 ring-slate-700/80"></p>
-  <div class="flex w-full flex-col gap-3">
+<section id="screen-result" hidden
+  class="relative mx-auto flex min-h-0 w-full max-w-md flex-1 flex-col items-center justify-center gap-5 overflow-y-auto px-4 py-4 text-center sm:max-w-xl sm:py-6 md:max-w-2xl">
+  
+  <span class="rotate-2 rounded-full border-2 border-[#12100E] bg-[#F5A623] px-4 py-1 text-xs font-black uppercase tracking-widest text-[#12100E] shadow-[0_3px_0_#12100E]">
+    Run Completed
+  </span>
+
+  <div class="space-y-1">
+    <p id="result-score" class="text-6xl font-black tabular-nums text-[#FFF7EB] sm:text-7xl md:text-8xl"></p>
+    <p id="result-detail" class="inline-block rounded-full border-2 border-[#12100E] bg-[#161D27] px-5 py-2 text-base font-black text-[#29B6F6] shadow-[0_3px_0_#12100E] sm:text-lg"></p>
+  </div>
+
+  <p class="max-w-[34ch] text-xs font-bold text-slate-400 sm:text-sm">
+    Your brain cells put up a brave fight before completely fizzling out into ashes.
+  </p>
+
+  <div class="flex w-full flex-col gap-3 pt-2">
     <button id="btn-again" type="button"
-      class="w-full rounded-2xl bg-gradient-to-b from-sky-400 to-sky-600 px-6 py-5 text-2xl font-extrabold text-slate-950 shadow-lg shadow-sky-500/40 transition hover:brightness-110 active:scale-[0.98]">
-      Play again
+      class="w-full rounded-2xl border-4 border-[#12100E] bg-[#FF5A1F] px-6 py-4 text-xl font-black text-[#12100E] shadow-[0_6px_0_#12100E] transition hover:brightness-110 active:translate-y-1 active:shadow-[0_1px_0_#12100E] sm:text-2xl">
+      PLAY AGAIN OR COWARD 🔄
     </button>
     <button id="btn-home" type="button"
-      class="w-full rounded-2xl border border-slate-700/80 bg-slate-900/60 px-6 py-4 text-lg font-bold text-slate-300 transition hover:border-slate-600 hover:bg-slate-900 active:scale-[0.98]">
-      Home
+      class="w-full rounded-2xl border-2 border-[#12100E] bg-[#161D27] px-6 py-3.5 text-base font-black text-[#FFF7EB] transition hover:bg-[#0D1117] active:scale-98">
+      Retreat to Home
     </button>
   </div>
 </section>
 
-<!-- RESULT 1v1 -->
-<section id="screen-result-1v1" hidden class="flex min-h-0 flex-1 flex-col items-center justify-center gap-5 overflow-y-auto py-4 text-center">
-  <p id="winner-label" class="text-4xl font-extrabold sm:text-5xl"></p>
-  <div class="w-full space-y-3 rounded-3xl border border-slate-800/90 bg-slate-900/70 p-5 shadow-xl">
-    <div class="flex items-center justify-between gap-3 rounded-2xl border border-cyan-500/30 bg-cyan-500/10 px-4 py-3">
-      <span class="flex items-center gap-2 font-bold text-cyan-300">
-        <span class="h-3 w-3 rounded-full bg-cyan-400"></span> You
-      </span>
-      <span id="r1-you-score" class="text-right font-extrabold tabular-nums text-slate-100"></span>
-    </div>
-    <div class="flex items-center justify-between gap-3 rounded-2xl border border-amber-500/30 bg-amber-500/10 px-4 py-3">
-      <span class="flex items-center gap-2 font-bold text-amber-300">
-        <span class="h-3 w-3 rounded-full bg-amber-400"></span> Friend
-      </span>
-      <span id="r1-friend-score" class="text-right font-extrabold tabular-nums text-slate-100"></span>
-    </div>
-    <p id="r1-note" class="pt-1 text-sm text-slate-400"></p>
+<!-- RESULT MULTIPLAYER -->
+<section id="screen-result-1v1" hidden
+  class="relative mx-auto flex min-h-0 w-full max-w-md flex-1 flex-col items-center justify-center gap-5 overflow-y-auto px-4 py-4 text-center sm:max-w-xl sm:py-6 md:max-w-2xl">
+  
+  <p id="winner-label" class="text-4xl font-black text-[#FFF7EB] sm:text-5xl md:text-6xl"></p>
+
+  <div class="w-full space-y-3 rounded-3xl border-4 border-[#12100E] bg-[#161D27] p-5 shadow-[0_8px_0_#12100E] sm:p-6">
+    <p class="border-b-2 border-[#12100E] pb-2 text-xs font-black uppercase tracking-wider text-[#F5A623]">
+      Final Damage Rankings
+    </p>
+    <ol id="r1-standings" class="w-full space-y-2 text-left"></ol>
+    <p id="r1-note" class="pt-2 text-xs font-bold text-slate-400"></p>
   </div>
+
   <button id="btn-1v1-home" type="button"
-    class="w-full rounded-2xl bg-gradient-to-b from-sky-400 to-sky-600 px-6 py-5 text-2xl font-extrabold text-slate-950 shadow-lg shadow-sky-500/40 transition hover:brightness-110 active:scale-[0.98]">
-    Home
+    class="w-full rounded-2xl border-4 border-[#12100E] bg-[#29B6F6] px-6 py-4 text-xl font-black text-[#12100E] shadow-[0_6px_0_#12100E] transition hover:brightness-110 active:translate-y-1 active:shadow-[0_1px_0_#12100E] sm:text-2xl">
+    BRAG IN MAIN MENU 🏆
   </button>
 </section>
 
-<!-- COUNTDOWN OVERLAY -->
-<div id="overlay-countdown" hidden class="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/92 backdrop-blur-sm">
-  <p id="countdown-num" class="text-[8rem] font-extrabold tabular-nums text-transparent bg-clip-text bg-gradient-to-b from-sky-300 to-sky-600">3</p>
+<!-- FULLSCREEN COUNTDOWN OVERLAY -->
+<div id="overlay-countdown" hidden class="fixed inset-0 z-50 flex flex-col items-center justify-center bg-[#0D1117]/95 backdrop-blur-md">
+  <p class="text-sm font-black uppercase tracking-[0.3em] text-[#FF5A1F] animate-pulse">Defuse or Detonate</p>
+  <p id="countdown-num" class="text-[9rem] font-black tabular-nums text-[#FFF7EB] drop-shadow-[0_8px_0_#12100E] sm:text-[11rem]">
+    3
+  </p>
 </div>
 
-<!-- DISCONNECT OVERLAY -->
-<div id="overlay-disconnect" hidden class="fixed inset-0 z-50 flex flex-col items-center justify-center gap-4 bg-slate-950/92 p-6 text-center backdrop-blur-sm">
-  <p class="text-xl font-extrabold text-rose-400">Opponent disconnected</p>
-  <p id="disconnect-count" class="text-7xl font-extrabold tabular-nums text-rose-300">10</p>
-  <p class="max-w-xs text-slate-400">You win if they don’t return in time</p>
+<!-- FULLSCREEN DISCONNECT OVERLAY -->
+<div id="overlay-disconnect" hidden class="fixed inset-0 z-50 flex flex-col items-center justify-center gap-4 bg-[#0D1117]/95 p-6 text-center backdrop-blur-md">
+  <span class="rounded-full border-2 border-[#12100E] bg-[#D72638] px-4 py-1 text-xs font-black uppercase tracking-widest text-[#FFF7EB] shadow-[0_3px_0_#12100E]">
+    Rival Vanished
+  </span>
+  <p class="text-2xl font-black text-[#FFF7EB] sm:text-3xl">Host Pulled the Plug</p>
+  <p id="disconnect-count" class="text-7xl font-black tabular-nums text-[#FF5A1F] drop-shadow-[0_5px_0_#12100E] sm:text-8xl">
+    10
+  </p>
+  <p class="max-w-xs text-xs font-bold text-slate-400 sm:text-sm">
+    Returning to lobby before you combust in loneliness...
+  </p>
   <button id="btn-dc-home" type="button"
-    class="mt-2 rounded-2xl border border-slate-700 bg-slate-900/80 px-6 py-3 font-bold text-slate-300 transition hover:border-slate-600">
-    Home
+    class="mt-2 rounded-2xl border-2 border-[#12100E] bg-[#161D27] px-6 py-3 font-black text-[#FFF7EB] shadow-[0_3px_0_#12100E] transition hover:bg-[#0D1117]">
+    Bail Out
   </button>
 </div>

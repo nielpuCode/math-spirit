@@ -1,46 +1,60 @@
-<section id="screen-play" hidden class="flex h-full flex-col justify-between overflow-hidden">
-  <div id="play-meta" class="hidden shrink-0 items-center justify-between gap-3 pb-2">
-    <p id="live-score" aria-live="polite" class="rounded-full bg-slate-900/80 px-3 py-1 text-xs font-bold tabular-nums text-slate-300 ring-1 ring-slate-700/80 sm:text-sm"></p>
+<!-- PLAY ARENA -->
+<section id="screen-play" hidden
+  class="relative mx-auto flex h-full w-full max-w-md flex-col justify-between overflow-hidden px-4 py-3 sm:max-w-xl sm:py-5 md:max-w-2xl lg:max-w-3xl">
+
+  <!-- Header / Meta Bar -->
+  <div id="play-meta" class="hidden shrink-0 items-center justify-between gap-3 pb-2 sm:pb-3">
+    <p id="live-score" aria-live="polite"
+      class="rounded-full border-2 border-[#12100E] bg-[#161D27] px-4 py-1.5 text-xs font-black tabular-nums text-[#FFF7EB] shadow-[0_3px_0_#12100E] sm:text-sm">
+    </p>
+
     <div class="flex shrink-0 items-center gap-2">
       <button id="btn-stop" type="button" hidden
-        class="rounded-full border border-rose-500/40 bg-rose-500/10 px-4 py-1.5 text-xs font-bold text-rose-300 transition active:bg-rose-500/20">
-        Stop
+        class="rounded-full border-2 border-[#12100E] bg-[#D72638]/20 px-4 py-1.5 text-xs font-black text-[#D72638] shadow-[0_2px_0_#12100E] transition hover:bg-[#D72638] hover:text-[#FFF7EB] active:translate-y-0.5 sm:text-sm">
+        Give Up
       </button>
       <button id="btn-leave-1v1" type="button" hidden
-        class="rounded-full border border-rose-500/40 bg-rose-500/10 px-4 py-1.5 text-xs font-bold text-rose-300 transition active:bg-rose-500/20">
-        Leave
+        class="rounded-full border-2 border-[#12100E] bg-[#D72638]/20 px-4 py-1.5 text-xs font-black text-[#D72638] shadow-[0_2px_0_#12100E] transition hover:bg-[#D72638] hover:text-[#FFF7EB] active:translate-y-0.5 sm:text-sm">
+        Rage Quit
       </button>
     </div>
   </div>
 
-  <div id="multi-bars" hidden class="shrink-0 space-y-2 pb-2">
-    <div class="flex items-center gap-2">
-      <span class="h-3 w-3 shrink-0 rounded-full bg-cyan-400 shadow shadow-cyan-400/50"></span>
-      <span class="w-12 shrink-0 text-xs font-bold text-cyan-300">You</span>
-      <div class="h-3 flex-1 overflow-hidden rounded-full bg-slate-800/90 ring-1 ring-slate-700/80">
-        <div id="bar-you" class="h-full rounded-full bg-gradient-to-r from-cyan-500 to-cyan-300 transition-all duration-300" style="width:0%"></div>
+  <!-- Multiplayer Progress Bars (Rivals track) -->
+  <div id="multi-bars" class="hidden max-h-24 sm:max-h-32 shrink-0 space-y-1.5 overflow-y-auto pb-2 scrollbar-none"></div>
+
+  <!-- Peer Alert Banner with Centered Circular Counter -->
+  <div id="peer-alert" class="hidden shrink-0 rounded-2xl border-4 border-[#12100E] bg-[#F5A623] p-2.5 shadow-[0_6px_0_#12100E] transition-all mb-2">
+    <div class="flex items-center justify-between gap-3">
+      <div class="flex min-w-0 items-center gap-2">
+        <span class="text-base">🚨</span>
+        <p id="peer-alert-text" class="min-w-0 truncate text-left text-xs font-black text-[#12100E] sm:text-sm">
+          Opponent answered! Hurry!
+        </p>
       </div>
-      <span id="bar-you-score" class="w-20 shrink-0 text-right text-xs font-bold tabular-nums text-slate-300">0✓ 0/0</span>
+
+      <!-- Stable circular countdown badge -->
+      <span id="peer-alert-num"
+        class="flex h-8 w-8 shrink-0 items-center justify-center rounded-full border-2 border-[#12100E] bg-[#D72638] text-sm font-black tabular-nums leading-none text-[#FFF7EB] shadow-[0_2px_0_#12100E] animate-pulse">
+        3
+      </span>
     </div>
-    <div class="flex items-center gap-2">
-      <span class="h-3 w-3 shrink-0 rounded-full bg-amber-400 shadow shadow-amber-400/50"></span>
-      <span class="w-12 shrink-0 text-xs font-bold text-amber-300">Friend</span>
-      <div class="h-3 flex-1 overflow-hidden rounded-full bg-slate-800/90 ring-1 ring-slate-700/80">
-        <div id="bar-friend" class="h-full rounded-full bg-gradient-to-r from-amber-500 to-amber-300 transition-all duration-300" style="width:0%"></div>
-      </div>
-      <span id="bar-friend-score" class="w-20 shrink-0 text-right text-xs font-bold tabular-nums text-slate-300">0✓ 0/0</span>
+
+    <!-- Countdown Fill Bar -->
+    <div class="mt-2 h-2 w-full overflow-hidden rounded-full border-2 border-[#12100E] bg-[#0D1117]">
+      <div id="peer-alert-fill" class="h-full rounded-full bg-[#12100E] transition-[width] duration-100 ease-linear" style="width: 100%;"></div>
     </div>
   </div>
 
-  <p id="friend-answered" hidden class="shrink-0 text-center text-xs font-bold uppercase tracking-wider text-amber-300/90">
-    Friend already answered
-  </p>
-
-  <div class="flex flex-1 min-h-0 flex-col gap-2">
+  <!-- Main Game Stage: Equation Board + Choice Grid -->
+  <div class="my-auto flex flex-1 min-h-0 flex-col justify-center gap-3 sm:gap-4 md:gap-6">
+    <!-- Equation Display Card -->
     <div id="equation"
-      class="anim-rise flex flex-1 min-h-0 items-center justify-center overflow-hidden rounded-3xl border border-slate-800 bg-slate-900/50 text-center font-extrabold tabular-nums leading-none text-[clamp(2.5rem,11vw,4.5rem)] shadow-inner shadow-slate-950/60">
+      class="anim-rise flex flex-1 min-h-[160px] sm:min-h-[220px] max-h-[380px] select-none items-center justify-center overflow-hidden rounded-3xl border-4 border-[#12100E] bg-[#161D27] p-4 text-center font-black tabular-nums leading-none text-[clamp(2.75rem,7vw,5.5rem)] text-[#FFF7EB] shadow-[0_8px_0_#12100E] transition-shadow duration-200">
     </div>
-  
-    <div id="choices" class="grid w-full shrink-0 grid-cols-6 gap-2 pb-2"></div>
+
+    <!-- Choices Grid -->
+    <div id="choices" class="grid w-full shrink-0 grid-cols-6 gap-2 sm:gap-3.5 pb-2"></div>
   </div>
+
 </section>

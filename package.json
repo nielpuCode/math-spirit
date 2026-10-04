@@ -1,5 +1,5 @@
 {
-  "name": "math-sprint",
+  "name": "ticktickmath",
   "private": true,
   "version": "1.0.0",
   "scripts": {
@@ -7,7 +7,7 @@
     "dev:host": "vite --host",
     "build": "vite build",
     "preview": "vite preview",
-    "test": "node test/generator.test.mjs && node test/winner.test.mjs"
+    "test": "node test/generator.test.mjs && node test/winner.test.mjs && node test/names.test.mjs && node test/party.test.mjs"
   },
   "devDependencies": {
     "@tailwindcss/vite": "^4.1.11",

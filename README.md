@@ -1,4 +1,4 @@
-# Math Sprint
+# TickTickMath
 
 Fast mental-math practice for 2-digit arithmetic. Big type, tight layout, tricky multiple choice. Built for phones first — solo or 1v1 with a friend.
 
@@ -8,7 +8,9 @@ Fast mental-math practice for 2-digit arithmetic. Big type, tight layout, tricky
 - **Integer-only problems** — division always exact; subtraction may be negative
 - **Tricky answer choices** — common error patterns (carry misses, sign flips, off-by-ten, digit shuffles)
 - **Solo modes** — fixed question count (default 20) or infinite mode with live score
-- **1v1 multiplayer** — room code, shared questions, cyan vs amber (no names), ready + 3-2-1 countdown
+- **Multiplayer rooms** — up to 8 players, one room code, shared questions, ready + 3-2-1 countdown
+- **Nicknames** — funny random default, editable, remembered on your device; clashes get an automatic suffix
+- **Answer race** — first answer on a question starts a countdown for everyone still on it (host sets the seconds, default 3, 0 = off); timeout locks in as blank
 - **Instant feedback** — correct/incorrect flash, then auto-advance
 - **Mobile-first UI** — fits common phone viewports without scrolling mid-round
 - **No account, no backend** — static build; multiplayer uses WebRTC (PeerJS)
@@ -35,12 +37,12 @@ Open **http://localhost:5173**
 | `npm run build` | Production build → `dist/` |
 | `npm run preview` | Serve the production build locally |
 
-### Testing 1v1 on two devices
+### Testing multiplayer on two devices
 
 1. `npm run dev:host`
 2. Note the Network URL (e.g. `http://192.168.1.5:5173`)
-3. Both phones open that URL **on the same Wi-Fi**
-4. Host creates room, guest joins with the code
+3. All phones open that URL **on the same Wi-Fi**
+4. Host creates room, guests join with the code
 
 **WebRTC needs a secure context.** `localhost` is always allowed. Plain `http://192.168.x.x` may block multiplayer in some browsers — if 1v1 fails on LAN, test solo on localhost, or put HTTPS in front (e.g. `npx localtunnel --port 5173`, or deploy to Vercel and test there).
 
@@ -52,16 +54,17 @@ Open **http://localhost:5173**
 4. Green = correct, red = wrong; next question loads automatically
 5. Finite runs end with a score screen; infinite runs end when you tap **Stop**
 
-## How to play (1v1)
+## How to play (multiplayer)
 
-1. Both phones open **Play 1v1**
-2. Host: set questions (default **10**, range 1–500) → **Create room**
-3. Share the **6-character code** (Copy button on host)
-4. Guest: enter code → **Join**
-5. Both tap **Ready** → countdown **3 · 2 · 1** starts the match
-6. Same questions on both devices; progress bars show cyan (you) vs amber (friend)
-7. **Winner** = most correct; tie → faster total time
-8. If a player disconnects, the other wins after a **10s** grace period
+1. Everyone opens **Play together** and picks a nickname (random funny one pre-filled, saved on device)
+2. Host: set questions (default **10**, range 1–500) and answer pressure (default **3s**, range 0–10, **0 = off**, remembered on device) → **Create room**
+3. Share the **6-character code** (Copy button on host); up to **8 players** can join before the game starts
+4. Guests: enter code → **Join** (name clash? host auto-renames you with a suffix)
+5. Lobby shows join count + who is ready; **all players tap Ready** → countdown **3 · 2 · 1**
+6. Same questions on all devices; live bars per player
+7. First answer on a question starts the host's countdown for everyone still on it — timeout locks in as **blank** (no countdown when set to 0: pure own-pace race, but a stalled player stalls the room)
+8. **Standings** = most correct; tie → faster total time
+9. If a player drops mid-game they are removed and the rest continue; if the host drops, the room closes after **10s**
 
 ## Project structure
 
@@ -78,12 +81,16 @@ Open **http://localhost:5173**
 ├── js/
 │   ├── main.js         # Entry — injects screens then loads game
 │   ├── generator.js    # Problem + distractor logic (pure)
-│   ├── multi.js        # PeerJS room transport + winner rules
-│   └── game.js         # Screens, state, solo + 1v1 flow
+│   ├── names.js        # Nickname list + dedupe + device storage (pure)
+│   ├── multi.js        # PeerJS room transport + standings sort
+│   ├── party.js        # Room state: roster, ready gate, answers (pure)
+│   └── game.js         # Screens, state, solo + multiplayer flow
 ├── test/
 │   ├── generator.test.mjs
 │   ├── winner.test.mjs
-│   └── host-count.test.mjs
+│   ├── names.test.mjs
+│   ├── party.test.mjs
+│   └── host-count.test.mjs   # not in npm test; needs dist/ (run: node test/host-count.test.mjs)
 ├── vite.config.mjs
 ├── package.json
 ├── vercel.json
@@ -93,7 +100,7 @@ Open **http://localhost:5173**
 ## Tech stack
 
 - Vite 7 + Tailwind CSS 4 + vanilla JavaScript
-- **1v1:** PeerJS (WebRTC data channels) — signaling via public PeerJS cloud
+- **Multiplayer:** PeerJS (WebRTC data channels) — signaling via public PeerJS cloud; host relays every message (star topology, host is also a player)
 - No database, no login
 
 ## Tests
@@ -113,11 +120,11 @@ npm test
 
 No environment variables. Works on the Vercel free tier.
 
-After the first Vercel deploy, open the **production URL** for 1v1 (HTTPS is required there and already provided).
+After the first Vercel deploy, open the **production URL** for multiplayer (HTTPS is required there and already provided).
 
 ## Multiplayer notes
 
-- P2P: phones connect directly; the host device holds the room
+- Star topology: guests connect only to the host, the host relays everything (so the host device sees all answers)
 - If the host closes the tab, the room ends
 - Strict networks may block WebRTC without TURN — not included in v1
 - Upgrade path: custom signaling (Cloudflare Worker) or Supabase Realtime

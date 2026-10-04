@@ -1,54 +1,122 @@
-<!-- MULTI SETUP — lobby -->
-<section id="screen-multi-setup" hidden class="flex min-h-0 flex-1 flex-col overflow-y-auto overscroll-contain">
-  <div class="mx-auto flex w-full max-w-md flex-col gap-5 px-0 py-4 pb-8 md:max-w-lg md:gap-6 md:py-8">
+<!-- MULTI SETUP / LOBBY -->
+<section id="screen-multi-setup" hidden class="relative flex min-h-0 w-full flex-1 flex-col overflow-y-auto overscroll-contain p-0">
+  <div class="mx-auto flex w-full max-w-md flex-col gap-4 sm:max-w-xl sm:gap-5 md:max-w-2xl lg:max-w-3xl pb-10">
+
+    <!-- Header -->
     <header class="shrink-0 text-center">
-      <p class="text-xs font-bold uppercase tracking-[0.25em] text-indigo-300/90 md:text-sm">1v1 💀</p>
-      <h2 class="mt-2 text-3xl font-extrabold md:text-4xl">Ego Battle Royale</h2>
-      <p class="mx-auto mt-3 max-w-[32ch] rotate-[-0.8deg] rounded-2xl border border-dashed border-slate-700 bg-slate-900/70 px-4 py-2 text-sm font-bold leading-relaxed text-slate-300 md:max-w-[36ch] md:text-base">
-        Call your already brain-rotted friend here ↓
+      <span class="inline-block -rotate-2 rounded-full border-2 border-[#12100E] bg-[#D72638] px-3 py-1 text-xs font-black uppercase tracking-wider text-[#FFF7EB] shadow-[0_3px_0_#12100E]">
+        Squad Carnage
+      </span>
+      <h2 class="mt-2 text-3xl font-black text-[#FFF7EB] sm:text-4xl md:text-5xl">
+        Ego Slaughterhouse
+      </h2>
+      <p class="mx-auto mt-2 max-w-[42ch] rounded-2xl border-2 border-dashed border-slate-700 bg-[#161D27]/80 px-4 py-2 text-xs font-bold text-[#F6E6C9]/80 sm:text-sm">
+        Assemble your most confident, illiterate friends and expose their kindergarten arithmetic skills
       </p>
     </header>
 
-    <div class="shrink-0 rounded-3xl border border-slate-800/90 bg-slate-900/70 p-5 space-y-4 shadow-xl md:p-6">
-      <p class="text-xs font-bold uppercase tracking-wider text-slate-400 md:text-sm">👑 Be the host</p>
-      <div>
-        <label for="multi-q-count" class="mb-2 block text-sm font-medium text-slate-300">How much suffering?</label>
-        <div class="flex items-center gap-2">
-          <button id="q-minus" type="button"
-            class="h-12 w-12 shrink-0 rounded-2xl border border-slate-700 bg-slate-950 text-2xl font-black text-slate-200 active:bg-slate-900 md:h-14 md:w-14 md:text-3xl">−</button>
-          <input id="multi-q-count" type="number" inputmode="numeric" min="1" max="500" value="10"
-            class="min-w-0 flex-1 rounded-2xl border border-slate-700/80 bg-slate-950/90 px-2 py-3 text-center text-2xl font-extrabold tabular-nums text-sky-100 outline-none transition focus:border-sky-400 focus:ring-2 focus:ring-sky-500/30 md:py-4 md:text-3xl" />
-          <button id="q-plus" type="button"
-            class="h-12 w-12 shrink-0 rounded-2xl border border-slate-700 bg-slate-950 text-2xl font-black text-slate-200 active:bg-slate-900 md:h-14 md:w-14 md:text-3xl">+</button>
+    <!-- Player Profile Tag -->
+    <div class="shrink-0 rounded-3xl border-4 border-[#12100E] bg-[#161D27] p-4 shadow-[0_6px_0_#12100E] sm:p-5">
+      <label for="player-name" class="mb-2 block text-xs font-black uppercase tracking-wider text-[#F5A623] sm:text-sm">
+        What cursed alias should we call you?
+      </label>
+      <input id="player-name" type="text" autocomplete="off" maxlength="20" placeholder="Sentient Wet Sock"
+        class="w-full rounded-2xl border-2 border-[#12100E] bg-[#0D1117] px-4 py-3 text-lg font-black text-[#FFF7EB] outline-none transition placeholder:text-slate-600 focus:border-[#29B6F6] focus:ring-2 focus:ring-[#29B6F6]/30 sm:py-3.5 sm:text-xl" />
+      <p class="mt-2 text-center text-[11px] font-bold text-slate-500">
+        Saved locally / duplicate room names will get humorously butchered by the host
+      </p>
+    </div>
+
+    <!-- Responsive Split Grid on Tablet/Desktop: Host Box & Join Box -->
+    <div class="grid grid-cols-1 gap-4 md:grid-cols-2 md:gap-5">
+      
+      <!-- Host Card -->
+      <div class="flex flex-col justify-between rounded-3xl border-4 border-[#12100E] bg-[#161D27] p-4 shadow-[0_6px_0_#12100E] sm:p-5 space-y-4">
+        <div>
+          <div class="mb-3 flex items-center justify-between">
+            <span class="text-xs font-black uppercase tracking-wider text-[#29B6F6] sm:text-sm">👑 Run the Show</span>
+            <span class="rounded bg-[#29B6F6]/10 px-2 py-0.5 text-[10px] font-extrabold text-[#29B6F6] ring-1 ring-[#29B6F6]/30">Host</span>
+          </div>
+
+          <!-- Question Count Dial -->
+          <div class="mb-4">
+            <label for="multi-q-count" class="mb-1.5 block text-xs font-bold text-slate-300">
+              Questions of agony
+            </label>
+            <div class="flex items-center gap-2">
+              <button id="q-minus" type="button"
+                class="h-11 w-11 shrink-0 rounded-2xl border-2 border-[#12100E] bg-[#0D1117] text-2xl font-black text-[#FFF7EB] transition hover:bg-[#FF5A1F] hover:text-[#12100E] active:scale-95 sm:h-12 sm:w-12">−</button>
+              <input id="multi-q-count" type="number" inputmode="numeric" min="1" max="500" value="10"
+                class="min-w-0 flex-1 rounded-2xl border-2 border-[#12100E] bg-[#0D1117] px-2 py-2.5 text-center text-xl font-black tabular-nums text-[#29B6F6] outline-none transition focus:border-[#29B6F6] sm:text-2xl" />
+              <button id="q-plus" type="button"
+                class="h-11 w-11 shrink-0 rounded-2xl border-2 border-[#12100E] bg-[#0D1117] text-2xl font-black text-[#FFF7EB] transition hover:bg-[#FF5A1F] hover:text-[#12100E] active:scale-95 sm:h-12 sm:w-12">+</button>
+            </div>
+            <p class="mt-1 text-center text-[11px] font-bold text-slate-500">
+              Locking in <span id="q-display" class="font-extrabold text-[#29B6F6]">10</span> rounds
+            </p>
+          </div>
+
+          <!-- Grace Countdown Dial -->
+          <div>
+            <label for="grace-count" class="mb-1.5 block text-xs font-bold text-slate-300">
+              Panic buzzer countdown
+            </label>
+            <div class="flex items-center gap-2">
+              <button id="g-minus" type="button"
+                class="h-11 w-11 shrink-0 rounded-2xl border-2 border-[#12100E] bg-[#0D1117] text-2xl font-black text-[#FFF7EB] transition hover:bg-[#F5A623] hover:text-[#12100E] active:scale-95 sm:h-12 sm:w-12">−</button>
+              <input id="grace-count" type="number" inputmode="numeric" min="0" max="10" value="3"
+                class="min-w-0 flex-1 rounded-2xl border-2 border-[#12100E] bg-[#0D1117] px-2 py-2.5 text-center text-xl font-black tabular-nums text-[#F5A623] outline-none transition focus:border-[#F5A623] sm:text-2xl" />
+              <button id="g-plus" type="button"
+                class="h-11 w-11 shrink-0 rounded-2xl border-2 border-[#12100E] bg-[#0D1117] text-2xl font-black text-[#FFF7EB] transition hover:bg-[#F5A623] hover:text-[#12100E] active:scale-95 sm:h-12 sm:w-12">+</button>
+            </div>
+            <p class="mt-1 text-center text-[11px] font-bold text-slate-500">
+              <span id="g-display" class="font-extrabold text-[#F5A623]">3s per question (0 = chill mode)</span>
+            </p>
+          </div>
         </div>
-        <p class="mt-2 text-center text-xs font-bold tracking-wider text-slate-500 md:text-sm">Locking in <span id="q-display" class="text-sky-300">10</span> questions of pain</p>
+
+        <button id="btn-create-room" type="button"
+          class="w-full rounded-2xl border-4 border-[#12100E] bg-[#29B6F6] px-5 py-3.5 text-lg font-black text-[#12100E] shadow-[0_5px_0_#12100E] transition hover:brightness-110 active:translate-y-1 active:shadow-[0_1px_0_#12100E] sm:text-xl">
+          Ignite Lobby 🎪
+        </button>
       </div>
-      <button id="btn-create-room" type="button"
-        class="w-full rounded-2xl bg-gradient-to-b from-cyan-400 to-cyan-600 px-6 py-4 text-xl font-extrabold text-slate-950 shadow-lg shadow-cyan-500/30 transition hover:brightness-110 active:scale-[0.98] md:py-5 md:text-2xl">
-        Spin up the arena 🏟️
-      </button>
+
+      <!-- Join Card -->
+      <div class="flex flex-col justify-between rounded-3xl border-4 border-[#12100E] bg-[#161D27] p-4 shadow-[0_6px_0_#12100E] sm:p-5 space-y-4">
+        <div>
+          <div class="mb-3 flex items-center justify-between">
+            <span class="text-xs font-black uppercase tracking-wider text-[#F5A623] sm:text-sm">🚪 Sneak In</span>
+            <span class="rounded bg-[#F5A623]/10 px-2 py-0.5 text-[10px] font-extrabold text-[#F5A623] ring-1 ring-[#F5A623]/30">Guest</span>
+          </div>
+
+          <div>
+            <label for="multi-code" class="mb-1.5 block text-xs font-bold text-slate-300">
+              Secret 6-letter room code
+            </label>
+            <input id="multi-code" type="text" inputmode="text" autocomplete="off" autocapitalize="characters"
+              maxlength="6" placeholder="B4RB13"
+              class="w-full rounded-2xl border-2 border-[#12100E] bg-[#0D1117] px-4 py-3 text-center text-2xl font-black uppercase tracking-[0.3em] text-[#F5A623] outline-none transition placeholder:tracking-normal placeholder:text-slate-700 focus:border-[#F5A623] sm:py-4 sm:text-3xl" />
+          </div>
+          <p class="mt-2 text-center text-xs text-slate-400">
+            Paste the code the host dropped in your chat before they get tired of waiting.
+          </p>
+        </div>
+
+        <button id="btn-join-room" type="button"
+          class="w-full rounded-2xl border-4 border-[#12100E] bg-[#F5A623] px-5 py-3.5 text-lg font-black text-[#12100E] shadow-[0_5px_0_#12100E] transition hover:brightness-110 active:translate-y-1 active:shadow-[0_1px_0_#12100E] sm:text-xl">
+          Infiltrate Match 🥷
+        </button>
+      </div>
+
     </div>
 
-    <div class="shrink-0 rounded-3xl border border-slate-800/90 bg-slate-900/70 p-5 space-y-4 shadow-xl md:p-6">
-      <p class="text-xs font-bold uppercase tracking-wider text-slate-400 md:text-sm">🙋 Sneak in</p>
-      <div>
-        <label for="multi-code" class="mb-2 block text-sm font-medium text-slate-300">Secret code</label>
-        <input id="multi-code" type="text" inputmode="text" autocomplete="off" autocapitalize="characters"
-          maxlength="6" placeholder="A3F9K2"
-          class="w-full rounded-2xl border border-slate-700/80 bg-slate-950/90 px-4 py-3 text-2xl font-extrabold tracking-[0.3em] text-amber-200 outline-none transition placeholder:text-slate-600 focus:border-amber-400 focus:ring-2 focus:ring-amber-500/30 md:py-4 md:text-3xl" />
-      </div>
-      <button id="btn-join-room" type="button"
-        class="w-full rounded-2xl bg-gradient-to-b from-amber-400 to-amber-600 px-6 py-4 text-xl font-extrabold text-slate-950 shadow-lg shadow-amber-500/30 transition hover:brightness-110 active:scale-[0.98] md:py-5 md:text-2xl">
-        Barge in 🚪
-      </button>
-    </div>
+    <!-- Error Banner -->
+    <p id="multi-error" class="hidden shrink-0 rounded-2xl border-2 border-[#D72638] bg-[#D72638]/20 px-4 py-2.5 text-center text-xs font-black text-[#FFF7EB] shadow-[0_4px_0_#12100E] sm:text-sm"></p>
 
-    <p id="multi-error" class="hidden shrink-0 text-center text-sm font-semibold text-rose-400"></p>
-
+    <!-- Back Button -->
     <button id="btn-multi-back" type="button"
-      class="w-full shrink-0 rounded-2xl border border-slate-700/80 bg-slate-900/60 px-6 py-3 text-lg font-bold text-slate-300 transition hover:border-slate-600 active:scale-[0.98] md:py-4 md:text-xl">
-      Nvm, I'm scared 🏃
+      class="w-full shrink-0 rounded-2xl border-2 border-[#12100E] bg-[#161D27] px-6 py-3 text-sm font-black text-slate-300 transition hover:bg-[#0D1117] hover:text-[#FFF7EB] active:scale-98 sm:text-base">
+      Never mind, I'm scared 🏃💨
     </button>
-    <div class="h-2 shrink-0" aria-hidden="true"></div>
   </div>
 </section>
