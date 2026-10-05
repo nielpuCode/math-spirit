@@ -40,6 +40,16 @@
     return true;
   }
 
+  // Lobby rename: same sanitizing as join, empty keeps the old name.
+  function setName(state, id, name) {
+    const p = state.players[id];
+    if (!p) return false;
+    const clean = String(name == null ? '' : name).trim().slice(0, 20);
+    if (!clean) return false;
+    p.name = clean;
+    return true;
+  }
+
   function names(state) {
     const out = [];
     const ids = Object.keys(state.players);
@@ -135,6 +145,7 @@
     addPlayer: addPlayer,
     removePlayer: removePlayer,
     setReady: setReady,
+    setName: setName,
     names: names,
     notReady: notReady,
     allReady: allReady,

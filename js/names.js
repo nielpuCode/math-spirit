@@ -106,7 +106,7 @@ const NAMES = [
   'I am a Cute Girl',
   'Any Info On Job Openings?',
   'Matcha Addiction',
-  'Debt Collector'
+  'Debt Collector'  
 ];
 
   const SUFFIX_ALPHABET = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';

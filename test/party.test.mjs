@@ -62,6 +62,17 @@ assert.equal(room.players.host.name, 'Thick Lipstick');
 assert.equal(party.size(room), 2);
 assert.equal(party.allReady(room), false);
 
+// lobby rename: sanitized like join, deduped by host, empty keeps old
+assert.ok(party.setName(room, 'g2', '  Night Owl  '));
+assert.equal(room.players.g2.name, 'Night Owl');
+assert.equal(party.setName(room, 'g2', '   '), false);
+assert.equal(room.players.g2.name, 'Night Owl');
+assert.equal(party.setName(room, 'nope', 'Ghost'), false);
+const clash = names.uniqueName('night owl', party.names(room));
+party.addPlayer(room, 'g3', clash);
+assert.ok(party.setName(room, 'g3', clash));
+assert.equal(new Set(party.names(room).map(names.normalize)).size, 3);
+
 // cap enforced
 const full = party.createRoom();
 for (let i = 0; i < party.MAX_PLAYERS; i++) party.addPlayer(full, 'p' + i, 'N' + i);

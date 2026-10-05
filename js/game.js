@@ -717,6 +717,7 @@ btn.className =
       pendingCount: 0,
       myReady: false,
       countdownStarted: false,
+      renamePending: false,
       localDone: false,
       pendingGrace: null,
       graceSec: 3,
@@ -1116,6 +1117,8 @@ btn.className =
       if (multiState.typedName) namesApi.saveCustom(data.name);
       const inp = $('player-name');
       if (inp) inp.value = data.name;
+      const gInp = $('guest-name');
+      if (gInp) gInp.value = data.name;
     });
 
     multi.on('roster', function (data) {
@@ -1123,6 +1126,18 @@ btn.className =
       partyApi.syncRoster(multiState.party, data.players);
       if (Number.isFinite(Number(data.rounds))) {
         multiState.pendingCount = Math.max(1, Math.min(500, Number(data.rounds)));
+      }
+      // Adopt a host-confirmed rename: the roster echo is the source of
+      // truth (it may carry an auto-suffixed variant on collision).
+      const me = multiState.me && multiState.party.players[multiState.me];
+      if (me && me.name && me.name !== multiState.myName) {
+        multiState.myName = me.name;
+        const gInp = $('guest-name');
+        if (gInp && document.activeElement !== gInp) gInp.value = me.name;
+        if (multiState.renamePending) {
+          multiState.renamePending = false;
+          namesApi.saveCustom(me.name);
+        }
       }
       if (multiState.phase === 'lobby') updateReadyUI();
       else {
@@ -1137,6 +1152,25 @@ btn.className =
       broadcastRoster();
       updateReadyUI();
       maybeStartCountdown();
+    });
+
+    // Guest lobby rename. Host dedupes against everyone else, applies it,
+    // and the next roster broadcast echoes the final name back.
+    multi.on('rename', function (data) {
+      if (!multiState || multiState.role !== 'host') return;
+      if (multiState.phase !== 'lobby') return;
+      const from = data && data.from;
+      if (!from || !multiState.party.players[from]) return;
+      const want = String(data.name == null ? '' : data.name).trim().slice(0, 20);
+      if (!want) return;
+      const ids = Object.keys(multiState.party.players);
+      const taken = [];
+      for (let i = 0; i < ids.length; i++) {
+        if (ids[i] !== from) taken.push(multiState.party.players[ids[i]].name);
+      }
+      if (!partyApi.setName(multiState.party, from, namesApi.uniqueName(want, taken))) return;
+      broadcastRoster();
+      updateReadyUI();
     });
 
     multi.on('begin', function (data) {
@@ -1500,6 +1534,32 @@ btn.className =
     } else {
       multi.send({ type: 'ready' });
       updateReadyUI();
+    }
+  });
+
+  function sendGuestRename() {
+    if (!multiState || multiState.role !== 'guest' || multiState.phase !== 'lobby') return;
+    if (!multiState.connOpen) {
+      showMultiError('Not connected yet.');
+      return;
+    }
+    const inp = $('guest-name');
+    const v = inp ? inp.value.trim().slice(0, 20) : '';
+    if (!v) {
+      showMultiError('Type a name first.');
+      return;
+    }
+    multiState.renamePending = true;
+    multi.send({ type: 'rename', name: v });
+  }
+
+  const guestNameBtn = $('btn-guest-name');
+  if (guestNameBtn) guestNameBtn.addEventListener('click', sendGuestRename);
+  const guestNameInp = $('guest-name');
+  if (guestNameInp) guestNameInp.addEventListener('keydown', function (ev) {
+    if (ev.key === 'Enter') {
+      ev.preventDefault();
+      sendGuestRename();
     }
   });
 
