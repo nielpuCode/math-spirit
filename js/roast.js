@@ -172,7 +172,7 @@
       out = { title: 'Tie for 1st!', cls: 'result-draw' };
     } else {
       var pos = me ? list.indexOf(me) + 1 : list.length;
-      out = { title: '#' + pos + ' · ' + first.name + ' wins', cls: 'result-lose' };
+      out = { title: '#' + pos + ' of ' + list.length, cls: 'result-lose' };
     }
     out.note = list.length > 1
       ? (winners.length > 1 ? 'Exact tie — same score, same time' : 'Most correct wins')

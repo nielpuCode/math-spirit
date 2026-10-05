@@ -1,0 +1,23 @@
+<!-- QR SHARE -->
+<section id="screen-qr" hidden class="relative mx-auto flex min-h-0 w-full max-w-md flex-1 flex-col items-center justify-center gap-5 px-4 py-4 text-center sm:max-w-xl sm:py-6">
+  <div class="bezel rise-in stagger-1 w-full">
+  <div class="halftone w-full space-y-4 rounded-3xl border-4 border-[#12100E] bg-[#161D27] p-5 shadow-[0_6px_0_#12100E] sm:p-6">
+    <span class="inline-block -rotate-1 rounded-full border-2 border-[#12100E] bg-[#34D399] px-3 py-0.5 text-xs font-black uppercase text-[#12100E]">
+      Scan to Play
+    </span>
+    <div class="flex justify-center">
+      <img id="qr-img" src="" alt="QR code to open this page"
+        class="h-56 w-56 rounded-2xl border-4 border-[#12100E] bg-[#FFF7EB] p-2 shadow-[0_6px_0_#12100E] sm:h-64 sm:w-64" />
+    </div>
+    <p class="text-xs font-bold leading-relaxed text-[#F6E6C9]/80 sm:text-sm">
+      Point any phone camera at it — no typing, no typos.
+    </p>
+    <p id="qr-url" class="break-all rounded-2xl border-2 border-[#12100E] bg-[#0D1117] px-4 py-2 text-xs font-bold text-slate-300 sm:text-sm"></p>
+  </div>
+  </div>
+
+  <button id="btn-qr-back" type="button"
+    class="rise-in stagger-2 w-full shrink-0 rounded-2xl border-2 border-[#12100E] bg-[#0D1117] px-6 py-3 text-sm font-black text-[#FFF7EB] transition hover:bg-[#FFF7EB] hover:text-[#12100E] active:scale-98 sm:max-w-xs">
+    Back
+  </button>
+</section>

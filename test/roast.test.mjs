@@ -59,7 +59,7 @@ assert.ok(titles.size > 1, 'variants actually vary');
 // strict tie: same score AND same time, or it is a loss
 let h = roast.headline(
   [{ id: 'a', name: 'A', correct: 3, ms: 1000 }, { id: 'b', name: 'B', correct: 3, ms: 2000 }], 'b');
-assert.equal(h.title, '#2 · A wins', 'same score slower time is a loss');
+assert.equal(h.title, '#2 of 2', 'same score slower time is a loss');
 assert.equal(h.cls, 'result-lose');
 assert.equal(h.note, 'Most correct wins');
 h = roast.headline(
@@ -76,7 +76,7 @@ assert.equal(h.title, 'You Win!', 'solo board');
 assert.equal(h.note, '', 'no note on solo board');
 h = roast.headline(
   [{ id: 'a', name: 'A', correct: 5, ms: 1000 }, { id: 'b', name: 'B', correct: 3, ms: 500 }], 'b');
-assert.equal(h.title, '#2 · A wins', 'outscored is a loss even when faster');
+assert.equal(h.title, '#2 of 2', 'outscored is a loss even when faster');
 
 // wiring: game.js must call the helper (results header would crash without it)
 import { readFileSync } from 'node:fs';

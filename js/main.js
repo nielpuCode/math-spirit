@@ -3,10 +3,11 @@ import lobbyHtml from '../screens/lobby.html?raw';
 import waitHtml from '../screens/wait.html?raw';
 import playHtml from '../screens/play.html?raw';
 import resultsHtml from '../screens/results.html?raw';
+import qrHtml from '../screens/qr.html?raw';
 
 const app = document.getElementById('app');
 if (app) {
-  app.innerHTML = homeHtml + lobbyHtml + waitHtml + playHtml + resultsHtml;
+  app.innerHTML = homeHtml + lobbyHtml + waitHtml + playHtml + resultsHtml + qrHtml;
 }
 
 await import('./generator.js');

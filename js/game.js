@@ -13,7 +13,7 @@
   const $ = function (id) {
     return document.getElementById(id);
   };
-  const SCREENS = ['home', 'play', 'result', 'multi-setup', 'multi-wait', 'result-1v1'];
+  const SCREENS = ['home', 'play', 'result', 'multi-setup', 'multi-wait', 'result-1v1', 'qr'];
   const FEEDBACK_MS = 550;
   const COUNTDOWN_MS = 3200;
   const ANSWER_GRACE_MS = 3000;
@@ -215,7 +215,9 @@
     if (mode === 'infinite') {
       $('live-score').textContent = '✓ ' + correct + '  /  ' + total;
     } else {
-      $('live-score').textContent = 'Q ' + Math.min(current + 1, limit) + ' / ' + limit;
+      const n = Math.min(current + 1, limit);
+      const left = Math.max(0, limit - n);
+      $('live-score').textContent = 'Q ' + n + ' / ' + limit + (left > 0 ? ' · ' + left + ' left' : ' · last one!');
     }
   }
 
@@ -306,8 +308,10 @@ function hidePeerAlert() {
   function showSoloPlayChrome(infinite) {
     $('multi-bars').classList.add('hidden');
     $('btn-leave-1v1').hidden = true;
-    $('play-meta').classList.toggle('hidden', !infinite);
-    $('play-meta').classList.toggle('flex', infinite);
+    // The meta bar carries the Q-progress pill: always visible in solo,
+    // only the Give Up button stays infinite-only.
+    $('play-meta').classList.remove('hidden');
+    $('play-meta').classList.add('flex');
     $('btn-stop').hidden = !infinite;
   }
 
@@ -327,6 +331,20 @@ function hidePeerAlert() {
     nextQuestion();
   }
 
+  // Shrink-to-fit: long expressions (32.999 − 12,5%) stay on one neat
+  // line on phones instead of wrapping mid-equation. Only ever shrinks —
+  // short equations keep their full display size on every viewport.
+  function fitEquation(eq) {
+    if (!eq || !eq.clientWidth) return;
+    eq.style.fontSize = '';
+    let size = parseFloat(window.getComputedStyle(eq).fontSize) || 44;
+    let guard = 12;
+    while (eq.scrollWidth > eq.clientWidth && size > 20 && guard-- > 0) {
+      size -= 2;
+      eq.style.fontSize = size + 'px';
+    }
+  }
+
   function renderEquation(problem) {
     const eq = $('equation');
     eq.classList.remove('anim-rise');
@@ -338,6 +356,7 @@ function hidePeerAlert() {
       main.className = 'text-slate-100';
       main.innerHTML = paintStoryOps(problem.text);
       eq.appendChild(main);
+      fitEquation(eq);
       return;
     }
     eq.innerHTML =
@@ -345,6 +364,7 @@ function hidePeerAlert() {
       ' <span class="' + (OP_CLASS[problem.op] || '') + '">' + problem.op + '</span> ' +
       '<span class="text-slate-100">' + problem.b + '</span>' +
       ' <span class="text-slate-500">=</span>';
+    fitEquation(eq);
   }
 
   function renderChoices(problem, choiceList) {
@@ -581,13 +601,40 @@ btn.className =
     screen.classList.remove('result-win', 'result-lose', 'result-draw');
 
     const first = board[0] || { name: 'Nobody', correct: 0, ms: 0 };
+    const mePos = board.findIndex(function (p) { return p.id === multiState.me; }) + 1;
     // Strict tie lives in roast.headline: same score AND same time only.
     const head = roastApi && roastApi.headline
       ? roastApi.headline(board, multiState.me)
-      : { title: '#' + board.length + ' · ' + first.name + ' wins', cls: 'result-lose', note: '' };
+      : { title: '#' + (mePos > 0 ? mePos : board.length) + ' of ' + board.length, cls: 'result-lose', note: '' };
     screen.classList.add(head.cls);
 
     $('winner-label').textContent = head.title;
+    // Main sub-display: one shared walk-of-shame for last place, shown to
+    // every viewer right under their own rank. The name pops in an amber
+    // chip so it reads first. Hidden on an exact-tie draw (no bottom frag
+    // when the crown is shared) and on a solo board.
+    const botEl = $('botfrag');
+    if (botEl) {
+      const last = board.length > 1 && head.cls !== 'result-draw' ? board[board.length - 1] : null;
+      botEl.replaceChildren();
+      if (last) {
+        const pre = document.createElement('span');
+        pre.textContent = '🤡 Botfrag ';
+        const nm = document.createElement('span');
+        nm.className = 'whitespace-nowrap rounded-md bg-[#D72638]/20 px-1.5 text-[#F5A623]';
+        nm.textContent = last.name;
+        const post = document.createElement('span');
+        post.textContent = ' literally needs to go back to kindergarten, fr 💀';
+        botEl.appendChild(pre);
+        botEl.appendChild(nm);
+        botEl.appendChild(post);
+        botEl.hidden = false;
+        botEl.classList.remove('hidden');
+      } else {
+        botEl.hidden = true;
+        botEl.classList.add('hidden');
+      }
+    }
     const homeBtn = $('btn-1v1-home');
     if (homeBtn) {
       homeBtn.textContent = board.length > 0 && board[0].id === multiState.me
@@ -616,6 +663,8 @@ btn.className =
       row.appendChild(top);
       row.classList.add('anim-rise');
       row.style.animationDelay = (i * 70) + 'ms';
+      // Every row carries its roast caption — the roast list lives here in
+      // the rankings, while the headline above is rank + the botfrag callout.
       if (roastApi && roastApi.pick) {
         const roast = roastApi.pick({
           id: p.id,
@@ -732,7 +781,8 @@ btn.className =
         : 'border-slate-700/60 bg-slate-900/70');
       const left = document.createElement('span');
       left.className = 'truncate font-bold ' + (you ? 'text-cyan-200' : 'text-slate-200');
-      left.textContent = p.name + (you ? ' (you)' : '');
+      left.textContent = p.name + (you ? ' (you)' : '')
+        + (ids[i] === 'host' && multiState.me !== 'host' ? ' 👑 (host)' : '');
       const chip = document.createElement('span');
       chip.className = 'shrink-0 rounded-full px-3 py-1 text-xs font-extrabold ' + (p.ready
         ? 'bg-emerald-500/15 text-emerald-300 ring-1 ring-emerald-500/40'
@@ -770,6 +820,8 @@ btn.className =
 
     if (multiState.role === 'host' && multiState.code) {
       $('room-code').textContent = multiState.code;
+    } else if (multiState.role === 'guest' && multiState.code) {
+      $('room-code-guest').textContent = multiState.code;
     }
     const rdisp = $('r-display');
     if (rdisp) rdisp.textContent = String(multiState.pendingCount > 0 ? multiState.pendingCount : (hostQuestionCount || ''));
@@ -957,9 +1009,22 @@ btn.className =
     $('btn-leave-1v1').hidden = true;
   }
 
+  // QR share page: encodes this page's own URL, so the code is always
+  // right on localhost, LAN, or the live deploy with zero config.
+  function enterQr() {
+    const url = window.location.href;
+    const img = $('qr-img');
+    if (img) {
+      img.src = 'https://api.qrserver.com/v1/create-qr-code/?size=240x240&margin=10&data='
+        + encodeURIComponent(url);
+    }
+    const label = $('qr-url');
+    if (label) label.textContent = url;
+    showScreen('qr');
+  }
+
   function enterMultiSetup() {
-    cleanupMulti();
-    clearMultiError();
+    cleanupMulti();    clearMultiError();
     $('multi-code').value = '';
     const nameInp = $('player-name');
     if (nameInp) nameInp.value = namesApi.loadCustom() || namesApi.randomName();
@@ -1209,6 +1274,10 @@ btn.className =
   });
 
   $('btn-multi').addEventListener('click', enterMultiSetup);
+  $('btn-qr').addEventListener('click', enterQr);
+  $('btn-qr-back').addEventListener('click', function () {
+    showScreen('home');
+  });
   $('btn-multi-back').addEventListener('click', function () {
     cleanupMulti();
     showScreen('home');
@@ -1328,6 +1397,7 @@ btn.className =
     }
     const resolved = resolveName();
     enterMultiWait('guest');
+    multiState.code = code; // keep the typed code for the wait display (+ rematch)
     multiState.myName = resolved.name;
     multiState.typedName = resolved.typed;
     $('wait-status-guest').textContent = 'Connecting…';
@@ -1358,32 +1428,39 @@ btn.className =
     this.value = this.value.toUpperCase().replace(/[^A-Z0-9]/g, '').slice(0, 6);
   });
 
-  $('btn-copy-code').addEventListener('click', function () {
-    const codeEl = $('room-code');
-    const code = (codeEl && codeEl.textContent ? codeEl.textContent : '').trim();
-    if (!code || code === '------') {
-      showMultiError('Room code not ready yet.');
-      return;
-    }
-    if (codeEl) {
-      const range = document.createRange();
-      range.selectNodeContents(codeEl);
-      const sel = window.getSelection();
-      sel.removeAllRanges();
-      sel.addRange(range);
-    }
-    copyText(code).then(function () {
-      $('btn-copy-code').textContent = 'Copied';
-      setTimeout(function () {
-        $('btn-copy-code').textContent = 'Copy';
-      }, 1200);
-    }).catch(function () {
-      $('btn-copy-code').textContent = 'Select code';
-      setTimeout(function () {
-        $('btn-copy-code').textContent = 'Copy';
-      }, 2000);
+  function bindCopyCode(btnId, codeElId) {
+    const btn = $(btnId);
+    if (!btn) return;
+    btn.addEventListener('click', function () {
+      const codeEl = $(codeElId);
+      const code = (codeEl && codeEl.textContent ? codeEl.textContent : '').trim();
+      if (!code || code === '------') {
+        showMultiError('Room code not ready yet.');
+        return;
+      }
+      if (codeEl) {
+        const range = document.createRange();
+        range.selectNodeContents(codeEl);
+        const sel = window.getSelection();
+        sel.removeAllRanges();
+        sel.addRange(range);
+      }
+      copyText(code).then(function () {
+        btn.textContent = 'Copied';
+        setTimeout(function () {
+          btn.textContent = 'Copy';
+        }, 1200);
+      }).catch(function () {
+        btn.textContent = 'Select code';
+        setTimeout(function () {
+          btn.textContent = 'Copy';
+        }, 2000);
+      });
     });
-  });
+  }
+
+  bindCopyCode('btn-copy-code', 'room-code');
+  bindCopyCode('btn-copy-code-guest', 'room-code-guest');
 
   function copyText(text) {
     if (navigator.clipboard && window.isSecureContext) {
