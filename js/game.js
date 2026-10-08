@@ -13,7 +13,7 @@
   const $ = function (id) {
     return document.getElementById(id);
   };
-  const SCREENS = ['home', 'play', 'result', 'multi-setup', 'multi-wait', 'result-1v1', 'qr'];
+  const SCREENS = ['home', 'play', 'result', 'multi-setup', 'multi-wait', 'result-1v1', 'qr', 'tutorial'];
   const FEEDBACK_MS = 550;
   const COUNTDOWN_MS = 3200;
   const ANSWER_GRACE_MS = 3000;
@@ -44,9 +44,13 @@
   let current = 0;
   let correct = 0;
   let total = 0;
+  let qShownAt = 0; // when the current question rendered (for per-answer durations)
   let hostQuestionCount = 10;
   let hostGraceSec = 3;
   const GRACE_STORE_KEY = 'mathsprint.grace';
+  const HARD_STORE_KEY = 'mathsprint.hard';
+  let soloHard = false;
+  let hostHard = false;
   const LANG_STORE_KEY = 'mathsprint.lang';
 
   function loadLang() {
@@ -112,7 +116,7 @@
   }
 
   function graceCaption(n) {
-    return n <= 0 ? 'Off · play at your own pace' : n + 's per question · 0 = off';
+    return n <= 0 ? 'Off: no rushing' : n + ' seconds to answer after someone else does (0 = off)';
   }
 
   function setGraceDur(n, save) {
@@ -139,6 +143,23 @@
     } catch (e) {
       return 3;
     }
+  }
+
+  // Hard mode memory: one key shared by the solo and host checkboxes.
+  function loadHard() {
+    try {
+      if (typeof localStorage === 'undefined') return false;
+      return localStorage.getItem(HARD_STORE_KEY) === '1';
+    } catch (e) {
+      return false;
+    }
+  }
+
+  function saveHard(on) {
+    try {
+      if (typeof localStorage === 'undefined') return;
+      localStorage.setItem(HARD_STORE_KEY, on ? '1' : '');
+    } catch (e) {}
   }
 
   function showScreen(name) {
@@ -184,8 +205,9 @@
 
   function buildQuestions(n) {
     const list = [];
+    const diff = hostHard ? 'hard' : 'normal';
     for (let i = 0; i < n; i++) {
-      const p = generateProblem(gameLang());
+      const p = generateProblem(gameLang(), diff);
       list.push({
         a: p.a,
         b: p.b,
@@ -234,7 +256,7 @@ function hidePeerAlert() {
   function showPeerAlert(name, seconds) {
     const el = $('peer-alert');
     if (!el) return;
-    $('peer-alert-text').textContent = name + ' answered — hurry!';
+    $('peer-alert-text').textContent = name + ' answered, hurry!';
     $('peer-alert-num').textContent = String(seconds);
     const fill = $('peer-alert-fill');
     if (fill) fill.style.width = '100%';
@@ -320,6 +342,7 @@ function hidePeerAlert() {
     clearDisconnect();
     multiState = null;
     mode = $('q-infinite').checked ? 'infinite' : 'fixed';
+    soloHard = !!($('q-hard') && $('q-hard').checked);
     limit = clampCount($('q-count').value, 1, 500, 20);
     $('q-count').value = String(limit);
     current = 0;
@@ -332,7 +355,7 @@ function hidePeerAlert() {
   }
 
   // Shrink-to-fit: long expressions (32.999 − 12,5%) stay on one neat
-  // line on phones instead of wrapping mid-equation. Only ever shrinks —
+  // line on phones instead of wrapping mid-equation. Only ever shrinks.
   // short equations keep their full display size on every viewport.
   function fitEquation(eq) {
     if (!eq || !eq.clientWidth) return;
@@ -403,6 +426,7 @@ btn.className =
       const problem = multiState.questions[current];
       renderEquation(problem);
       renderChoices(problem);
+      qShownAt = Date.now();
       updateLive();
       renderBars();
       if (multiState.pendingGrace) {
@@ -423,7 +447,7 @@ btn.className =
       return;
     }
 
-    const problem = generateProblem(gameLang());
+    const problem = generateProblem(gameLang(), soloHard ? 'hard' : 'normal');
     renderEquation(problem);
     renderChoices(problem);
     updateLive();
@@ -461,14 +485,17 @@ btn.className =
   function commitMultiAnswer(ok, blank) {
     const lim = multiState.limit || multiState.questions.length || 0;
     const finished = lim > 0 && current >= lim;
-    const ms = multiState.startTime ? Date.now() - multiState.startTime : 0;
+    // Per-question answering time: a local delta, so it stays comparable
+    // across devices with skewed clocks (never an absolute timestamp).
+    const now = Date.now();
+    const dms = qShownAt > 0 ? Math.max(0, now - qShownAt) : 0;
     const msg = {
       type: 'answered',
       index: current - 1,
       correct: !!ok,
       blank: !!blank,
       done: finished,
-      ms: ms,
+      dms: dms,
       from: multiState.me,
     };
     multiState.pendingGrace = null;
@@ -591,7 +618,7 @@ btn.className =
   }
 
   function formatMs(ms) {
-    if (!Number.isFinite(ms) || ms < 0) return '—';
+    if (!Number.isFinite(ms) || ms < 0) return '-';
     return (ms / 1000).toFixed(1) + 's';
   }
 
@@ -663,7 +690,7 @@ btn.className =
       row.appendChild(top);
       row.classList.add('anim-rise');
       row.style.animationDelay = (i * 70) + 'ms';
-      // Every row carries its roast caption — the roast list lives here in
+      // Every row carries its roast caption - the roast list lives here in
       // the rankings, while the headline above is rank + the botfrag callout.
       if (roastApi && roastApi.pick) {
         const roast = roastApi.pick({
@@ -682,7 +709,7 @@ btn.className =
         capTitle.className = 'font-black uppercase tracking-wide text-[#F5A623]';
         capTitle.textContent = roast.title;
         const capLine = document.createElement('span');
-        capLine.textContent = ' — ' + roast.line;
+        capLine.textContent = ' · ' + roast.line;
         cap.appendChild(capTitle);
         cap.appendChild(capLine);
         row.appendChild(cap);
@@ -721,7 +748,6 @@ btn.className =
       localDone: false,
       pendingGrace: null,
       graceSec: 3,
-      startTime: 0,
       connOpen: false,
       party: partyApi.createRoom(),
     };
@@ -824,6 +850,21 @@ btn.className =
     } else if (multiState.role === 'guest' && multiState.code) {
       $('room-code-guest').textContent = multiState.code;
     }
+    // Hidden invite-link holders for the copy buttons (both roles).
+    const link = multiState.code ? inviteLink(multiState.code) : '';
+    const lh = $('invite-link-host');
+    if (lh) lh.textContent = link;
+    const lg = $('invite-link-guest');
+    if (lg) lg.textContent = link;
+    // Dev/LAN addresses can't be opened from other phones (and WebRTC needs
+    // https anyway): say so right where the invite is shared.
+    const hn = window.location.hostname || '';
+    const localOnly = hn === 'localhost' || hn === '127.0.0.1'
+      || /^10\.|^192\.168\.|^172\.(1[6-9]|2\d|3[01])\./.test(hn);
+    const hh = $('invite-hint-host');
+    if (hh) hh.hidden = !localOnly;
+    const hg = $('invite-hint-guest');
+    if (hg) hg.hidden = !localOnly;
     const rdisp = $('r-display');
     if (rdisp) rdisp.textContent = String(multiState.pendingCount > 0 ? multiState.pendingCount : (hostQuestionCount || ''));
 
@@ -842,19 +883,19 @@ btn.className =
     const readyVisible = multiState.phase === 'lobby' && linked && !both;
     btn.hidden = !readyVisible;
     btn.disabled = multiState.myReady;
-    btn.textContent = multiState.myReady ? 'Waiting…' : 'Ready';
+    btn.textContent = multiState.myReady ? 'Waiting…' : 'I\'m Ready ✓';
 
     const othersReady = partyApi.size(multiState.party) >= 2 && waiting.length === 0 && !multiState.myReady;
     badge.classList.toggle('hidden', !othersReady);
     badge.hidden = !othersReady;
 
     const roundsTxt = multiState.pendingCount > 0 ? ' · ' + multiState.pendingCount + ' questions' : '';
-    if (both) status.textContent = 'Everyone ready — starting…';
+    if (both) status.textContent = 'Everyone ready, starting…';
     else if (multiState.role === 'host' && partyApi.size(multiState.party) < 2 && !multiState.connOpen) {
       const qn = multiState.pendingCount || hostQuestionCount || '';
       status.textContent = 'Share this code' + (qn ? ' · ' + qn + ' questions' : '') + ' · waiting for players…';
     } else if (multiState.myReady) status.textContent = 'Waiting for: ' + waitingLabel + roundsTxt;
-    else status.textContent = 'Tap Ready · waiting for: ' + waitingLabel + roundsTxt;
+    else status.textContent = 'Tap "I\'m Ready" below · waiting for: ' + waitingLabel + roundsTxt;
   }
 
   // Name shown to the room. Only user-typed (or previously saved) names
@@ -950,10 +991,10 @@ btn.className =
           hideCountdown();
           if (!multiState) return;
           multiState.phase = 'playing';
-          multiState.startTime = Date.now();
           current = 0;
           correct = 0;
           total = 0;
+          qShownAt = 0;
           locked = false;
           nextQuestion();
         }, GO_MS);
@@ -1012,21 +1053,42 @@ btn.className =
 
   // QR share page: encodes this page's own URL, so the code is always
   // right on localhost, LAN, or the live deploy with zero config.
-  function enterQr() {
-    const url = window.location.href;
+  // Shareable room invite: opening it auto-joins via the ?room= boot path.
+  function inviteLink(code) {
+    const c = String(code || '').toUpperCase().replace(/[^A-Z0-9]/g, '').slice(0, 6);
+    if (c.length !== 6) return '';
+    return window.location.origin + window.location.pathname + '?room=' + c;
+  }
+
+  let qrReturn = 'home';
+
+  function enterQr(url) {
+    const target = url || window.location.href;
     const img = $('qr-img');
     if (img) {
       img.src = 'https://api.qrserver.com/v1/create-qr-code/?size=240x240&margin=10&data='
-        + encodeURIComponent(url);
+        + encodeURIComponent(target);
     }
     const label = $('qr-url');
-    if (label) label.textContent = url;
+    if (label) label.textContent = target;
     showScreen('qr');
+  }
+
+  // Room QR for anyone already inside: encodes this room's invite link and
+  // returns to the lobby afterwards instead of home.
+  function enterRoomQr() {
+    if (!multiState || !multiState.code) return;
+    const link = inviteLink(multiState.code);
+    if (!link) return;
+    qrReturn = 'multi-wait';
+    enterQr(link);
   }
 
   function enterMultiSetup() {
     cleanupMulti();    clearMultiError();
     $('multi-code').value = '';
+    const hostHardBox = $('host-hard');
+    if (hostHardBox) hostHardBox.checked = loadHard();
     const nameInp = $('player-name');
     if (nameInp) nameInp.value = namesApi.loadCustom() || namesApi.randomName();
     nameEdited = false;
@@ -1044,7 +1106,7 @@ btn.className =
     $('ready-badge').hidden = true;
     $('btn-ready').hidden = true;
     $('btn-ready').disabled = false;
-    $('btn-ready').textContent = 'Ready';
+    $('btn-ready').textContent = 'I\'m Ready ✓';
     showScreen('multi-wait');
     updateReadyUI();
   }
@@ -1062,7 +1124,7 @@ btn.className =
       if (multiState.myName) {
         partyApi.addPlayer(multiState.party, 'host', multiState.myName);
       }
-      // do not overwrite pendingCount — it was locked at Create
+      // do not overwrite pendingCount - it was locked at Create
       if (!multiState.pendingCount) {
         const c = hostQuestionCount > 0 ? hostQuestionCount : readHostCount();
         hostQuestionCount = c;
@@ -1073,6 +1135,8 @@ btn.className =
       const disp = $('q-display');
       if (disp) disp.textContent = String(multiState.pendingCount);
       $('room-code').textContent = code;
+      const hInp = $('host-name');
+      if (hInp) hInp.value = multiState.myName || '';
       $('wait-host').classList.remove('hidden');
       $('wait-guest').classList.add('hidden');
       showScreen('multi-wait');
@@ -1115,6 +1179,13 @@ btn.className =
       multiState.me = data.id;
       partyApi.addPlayer(multiState.party, data.id, data.name);
       if (multiState.typedName) namesApi.saveCustom(data.name);
+      // Joined via invite link: drop ?room= so a refresh lands on plain
+      // home instead of silently rejoining as a duplicate guest.
+      try {
+        if (window.location.search.indexOf('room=') !== -1) {
+          window.history.replaceState(null, '', window.location.pathname + window.location.hash);
+        }
+      } catch (e) {}
       const inp = $('player-name');
       if (inp) inp.value = data.name;
       const gInp = $('guest-name');
@@ -1154,21 +1225,26 @@ btn.className =
       maybeStartCountdown();
     });
 
-    // Guest lobby rename. Host dedupes against everyone else, applies it,
-    // and the next roster broadcast echoes the final name back.
-    multi.on('rename', function (data) {
-      if (!multiState || multiState.role !== 'host') return;
-      if (multiState.phase !== 'lobby') return;
-      const from = data && data.from;
-      if (!from || !multiState.party.players[from]) return;
-      const want = String(data.name == null ? '' : data.name).trim().slice(0, 20);
-      if (!want) return;
+    // Lobby rename (host's own Save button and guests' rename messages share
+    // this). Host dedupes against everyone else; guests learn the final name
+    // from the next roster broadcast. Locked once the match starts.
+    function applyRename(id, want) {
+      if (!multiState || multiState.phase !== 'lobby') return null;
+      if (!id || !multiState.party.players[id]) return null;
+      want = String(want == null ? '' : want).trim().slice(0, 20);
+      if (!want) return null;
       const ids = Object.keys(multiState.party.players);
       const taken = [];
       for (let i = 0; i < ids.length; i++) {
-        if (ids[i] !== from) taken.push(multiState.party.players[ids[i]].name);
+        if (ids[i] !== id) taken.push(multiState.party.players[ids[i]].name);
       }
-      if (!partyApi.setName(multiState.party, from, namesApi.uniqueName(want, taken))) return;
+      if (!partyApi.setName(multiState.party, id, namesApi.uniqueName(want, taken))) return null;
+      return multiState.party.players[id].name;
+    }
+
+    multi.on('rename', function (data) {
+      if (!multiState || multiState.role !== 'host') return;
+      if (!applyRename(data && data.from, data && data.name)) return;
       broadcastRoster();
       updateReadyUI();
     });
@@ -1285,6 +1361,15 @@ btn.className =
     $('q-count').disabled = $('q-infinite').checked;
   });
 
+  const hardBox = $('q-hard');
+  if (hardBox) hardBox.addEventListener('change', function () {
+    saveHard(hardBox.checked);
+  });
+  const hostHardBox = $('host-hard');
+  if (hostHardBox) hostHardBox.addEventListener('change', function () {
+    saveHard(hostHardBox.checked);
+  });
+
   $('btn-play').addEventListener('click', startGame);
   $('btn-again').addEventListener('click', startGame);
 
@@ -1308,9 +1393,20 @@ btn.className =
   });
 
   $('btn-multi').addEventListener('click', enterMultiSetup);
-  $('btn-qr').addEventListener('click', enterQr);
-  $('btn-qr-back').addEventListener('click', function () {
+  $('btn-howto').addEventListener('click', function () {
+    showScreen('tutorial');
+  });
+  $('btn-tutorial-back').addEventListener('click', function () {
     showScreen('home');
+  });
+  $('btn-qr').addEventListener('click', function () {
+    qrReturn = 'home';
+    enterQr();
+  });
+  $('btn-qr-back').addEventListener('click', function () {
+    if (qrReturn === 'multi-wait' && !multiState) qrReturn = 'home'; // room died while QR open
+    showScreen(qrReturn);
+    qrReturn = 'home';
   });
   $('btn-multi-back').addEventListener('click', function () {
     cleanupMulti();
@@ -1328,6 +1424,7 @@ btn.className =
     enterMultiWait('host');
     multiState.myName = resolved.name;
     multiState.typedName = resolved.typed;
+    hostHard = !!($('host-hard') && $('host-hard').checked); // locked like the question count
     partyApi.addPlayer(multiState.party, 'host', resolved.name);
     multiState.me = 'host';
     multiState.pendingCount = count;
@@ -1421,13 +1518,15 @@ btn.className =
     });
   }
 
-  $('btn-join-room').addEventListener('click', function () {
+  // Single guest-join path for typed codes and invite links alike.
+  function joinWithCode(raw) {
     clearMultiError();
-    const code = $('multi-code').value.toUpperCase().replace(/[^A-Z0-9]/g, '').slice(0, 6);
-    $('multi-code').value = code;
+    const code = String(raw || '').toUpperCase().replace(/[^A-Z0-9]/g, '').slice(0, 6);
+    const codeInput = $('multi-code');
+    if (codeInput) codeInput.value = code;
     if (code.length !== 6) {
-      showMultiError('Enter a 6-character room code.');
-      return;
+      showMultiError('Enter the 6-letter room code.');
+      return false;
     }
     const resolved = resolveName();
     enterMultiWait('guest');
@@ -1436,6 +1535,11 @@ btn.className =
     multiState.typedName = resolved.typed;
     $('wait-status-guest').textContent = 'Connecting…';
     multi.joinRoom(code);
+    return true;
+  }
+
+  $('btn-join-room').addEventListener('click', function () {
+    joinWithCode($('multi-code').value);
   });
 
   const nameInput = $('player-name');
@@ -1465,6 +1569,7 @@ btn.className =
   function bindCopyCode(btnId, codeElId) {
     const btn = $(btnId);
     if (!btn) return;
+    const label = btn.textContent; // restore each button's own wording afterwards
     btn.addEventListener('click', function () {
       const codeEl = $(codeElId);
       const code = (codeEl && codeEl.textContent ? codeEl.textContent : '').trim();
@@ -1480,14 +1585,14 @@ btn.className =
         sel.addRange(range);
       }
       copyText(code).then(function () {
-        btn.textContent = 'Copied';
+        btn.textContent = 'Copied ✓';
         setTimeout(function () {
-          btn.textContent = 'Copy';
+          btn.textContent = label;
         }, 1200);
       }).catch(function () {
         btn.textContent = 'Select code';
         setTimeout(function () {
-          btn.textContent = 'Copy';
+          btn.textContent = label;
         }, 2000);
       });
     });
@@ -1495,6 +1600,12 @@ btn.className =
 
   bindCopyCode('btn-copy-code', 'room-code');
   bindCopyCode('btn-copy-code-guest', 'room-code-guest');
+  bindCopyCode('btn-copy-link-host', 'invite-link-host');
+  bindCopyCode('btn-copy-link-guest', 'invite-link-guest');
+  const qrHostBtn = $('btn-qr-host');
+  if (qrHostBtn) qrHostBtn.addEventListener('click', enterRoomQr);
+  const qrGuestBtn = $('btn-qr-guest');
+  if (qrGuestBtn) qrGuestBtn.addEventListener('click', enterRoomQr);
 
   function copyText(text) {
     if (navigator.clipboard && window.isSecureContext) {
@@ -1553,6 +1664,31 @@ btn.className =
     multi.send({ type: 'rename', name: v });
   }
 
+  function sendHostRename() {
+    if (!multiState || multiState.role !== 'host') return;
+    const inp = $('host-name');
+    const final = applyRename('host', inp ? inp.value : '');
+    if (!final) {
+      showMultiError('Type a name first.');
+      return;
+    }
+    multiState.myName = final;
+    namesApi.saveCustom(final);
+    if (inp) inp.value = final;
+    broadcastRoster();
+    updateReadyUI();
+  }
+
+  const hostNameBtn = $('btn-host-name');
+  if (hostNameBtn) hostNameBtn.addEventListener('click', sendHostRename);
+  const hostNameInp = $('host-name');
+  if (hostNameInp) hostNameInp.addEventListener('keydown', function (ev) {
+    if (ev.key === 'Enter') {
+      ev.preventDefault();
+      sendHostRename();
+    }
+  });
+
   const guestNameBtn = $('btn-guest-name');
   if (guestNameBtn) guestNameBtn.addEventListener('click', sendGuestRename);
   const guestNameInp = $('guest-name');
@@ -1594,5 +1730,18 @@ btn.className =
     if (disp) disp.textContent = String(v);
     setGraceDur(loadGraceDur(), false);
     applyLang(loadLang());
+    const hardInit = $('q-hard');
+    if (hardInit) hardInit.checked = loadHard();
+    // Invite-link auto-join: ?room=CODE drops the guest straight into the
+    // room with no typing. Failures fall through the normal guest error
+    // path (lobby + message), so a dead link can never strand anyone.
+    try {
+      const params = new URLSearchParams(window.location.search);
+      const invite = String(params.get('room') || '').toUpperCase().replace(/[^A-Z0-9]/g, '').slice(0, 6);
+      if (invite.length === 6) {
+        enterMultiSetup();
+        joinWithCode(invite);
+      }
+    } catch (e) {}
   })();
 })();

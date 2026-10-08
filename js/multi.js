@@ -1,23 +1,34 @@
 // ponytail: PeerJS transport only. Ceiling: public broker, host dies with tab, no reconnect.
 // Upgrade path: own signaling worker / Supabase Realtime if rooms must outlive host.
 (function (root) {
-  function decideWinner(a, b) {
-    if (a.disconnected && !b.disconnected) return 'b';
-    if (b.disconnected && !a.disconnected) return 'a';
-    if (a.correct > b.correct) return 'a';
-    if (b.correct > a.correct) return 'b';
-    if (a.ms < b.ms) return 'a';
-    if (b.ms < a.ms) return 'b';
-    return 'draw';
+  function accuracy(p) {
+    const a = Number(p.answered) || 0;
+    const c = Number(p.correct) || 0;
+    return a > 0 ? c / a : (c > 0 ? 1 : 0);
   }
 
-  // N-player standings: most correct wins, faster total time breaks ties.
-  // Each entry: { id, name, correct, ms }. Returns a sorted copy (best first).
+  // Fair order for any room size: more correct first, then higher accuracy,
+  // then less total answering time. Shared by decideWinner and rank so the
+  // 1v1 crown and the N-player board can never disagree.
+  function comparePlayers(a, b) {
+    const ad = !!a.disconnected, bd = !!b.disconnected;
+    if (ad && !bd) return 1;
+    if (bd && !ad) return -1;
+    if (a.correct !== b.correct) return b.correct - a.correct;
+    const aa = accuracy(a), ab = accuracy(b);
+    if (aa !== ab) return ab - aa;
+    return a.ms - b.ms;
+  }
+
+  function decideWinner(a, b) {
+    const c = comparePlayers(a, b);
+    return c < 0 ? 'a' : c > 0 ? 'b' : 'draw';
+  }
+
+  // N-player standings: most correct wins, accuracy then total time break ties.
+  // Each entry: { id, name, correct, answered, ms }. Returns a sorted copy (best first).
   function rank(players) {
-    return (players || []).slice().sort(function (x, y) {
-      if (y.correct !== x.correct) return y.correct - x.correct;
-      return x.ms - y.ms;
-    });
+    return (players || []).slice().sort(comparePlayers);
   }
 
   function makeCode() {

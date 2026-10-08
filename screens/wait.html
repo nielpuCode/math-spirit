@@ -6,24 +6,46 @@
     <div id="wait-host" class="bezel rise-in stagger-1 hidden w-full lg:col-span-1">
     <div class="w-full space-y-3 rounded-3xl border-4 border-[#12100E] bg-[#161D27] p-5 shadow-[0_6px_0_#12100E] sm:p-6">
       <span class="inline-block rotate-1 rounded-full border-2 border-[#12100E] bg-[#29B6F6] px-3 py-0.5 text-xs font-black uppercase text-[#12100E]">
-        Your Room Key
+        Room Code
       </span>
       <p id="room-code" class="text-5xl font-black tracking-[0.25em] text-[#29B6F6] tabular-nums sm:text-6xl md:text-7xl">
         ------
       </p>
-      <div class="flex justify-center">
+      <div class="flex justify-center gap-2">
         <button id="btn-copy-code" type="button"
           class="rounded-full border-2 border-[#12100E] bg-[#0D1117] px-5 py-2 text-xs font-black uppercase tracking-wider text-[#FFF7EB] shadow-[0_3px_0_#12100E] transition hover:bg-[#29B6F6] hover:text-[#12100E] active:translate-y-0.5">
           Copy Code
         </button>
+        <button id="btn-copy-link-host" type="button"
+          class="rounded-full border-2 border-[#12100E] bg-[#0D1117] px-5 py-2 text-xs font-black uppercase tracking-wider text-[#FFF7EB] shadow-[0_3px_0_#12100E] transition hover:bg-[#29B6F6] hover:text-[#12100E] active:translate-y-0.5">
+          Copy Invite Link
+        </button>
+      </div>
+      <span id="invite-link-host" hidden></span>
+      <p id="invite-hint-host" hidden class="mx-auto max-w-[40ch] text-[11px] font-bold leading-snug text-[#F5A623]">
+        Heads up: this address only works on this device. Invite phones from the live https link.
+      </p>
+      <div class="flex justify-center">
+        <button id="btn-qr-host" type="button"
+          class="rounded-full border-2 border-[#12100E] bg-[#0D1117] px-5 py-2 text-xs font-black uppercase tracking-wider text-[#FFF7EB] shadow-[0_3px_0_#12100E] transition hover:bg-[#29B6F6] hover:text-[#12100E] active:translate-y-0.5">
+          📱 Show Room QR
+        </button>
       </div>
       <p id="wait-status" class="text-xs font-bold text-[#F6E6C9]/80 sm:text-sm">
-        Spam your group chat before people fall asleep...
+        Share this code with your friends so they can join…
       </p>
+      <div class="flex items-center justify-center gap-2">
+        <input id="host-name" type="text" maxlength="20" autocomplete="off" placeholder="Your nickname" aria-label="Your nickname"
+          class="min-w-0 flex-1 rounded-2xl border-2 border-[#12100E] bg-[#0D1117] px-4 py-2 text-sm font-black text-[#FFF7EB] outline-none transition placeholder:text-slate-600 focus:border-[#29B6F6] sm:text-base" />
+        <button id="btn-host-name" type="button"
+          class="shrink-0 rounded-2xl border-2 border-[#12100E] bg-[#29B6F6] px-4 py-2 text-sm font-black text-[#12100E] shadow-[0_3px_0_#12100E] transition hover:brightness-110 active:translate-y-0.5">
+          Save
+        </button>
+      </div>
       <div class="flex items-center justify-center gap-2">
         <button id="r-minus" type="button"
           class="h-9 w-9 shrink-0 rounded-xl border-2 border-[#12100E] bg-[#0D1117] text-xl font-black text-[#FFF7EB] transition hover:bg-[#FF5A1F] hover:text-[#12100E] active:scale-95">−</button>
-        <span class="min-w-24 text-xs font-black tabular-nums text-[#F6E6C9]"><span id="r-display">10</span> rounds</span>
+        <span class="min-w-24 text-xs font-black tabular-nums text-[#F6E6C9]"><span id="r-display">10</span> questions</span>
         <button id="r-plus" type="button"
           class="h-9 w-9 shrink-0 rounded-xl border-2 border-[#12100E] bg-[#0D1117] text-xl font-black text-[#FFF7EB] transition hover:bg-[#FF5A1F] hover:text-[#12100E] active:scale-95">+</button>
       </div>
@@ -33,26 +55,40 @@
     <!-- Guest View Header -->
     <div id="wait-guest" class="rise-in stagger-1 hidden w-full space-y-3 rounded-3xl border-4 border-[#12100E] bg-[#161D27] p-5 shadow-[0_6px_0_#12100E] sm:p-6 lg:col-span-1">
       <span class="inline-block -rotate-1 rounded-full border-2 border-[#12100E] bg-[#F5A623] px-3 py-0.5 text-xs font-black uppercase text-[#12100E]">
-        Connected to Arena
+        You're In ✓
       </span>
       <p id="room-code-guest" class="text-4xl font-black tracking-[0.25em] text-[#F5A623] tabular-nums sm:text-5xl">
         ------
       </p>
-      <div class="flex justify-center">
+      <div class="flex justify-center gap-2">
         <button id="btn-copy-code-guest" type="button"
           class="rounded-full border-2 border-[#12100E] bg-[#0D1117] px-5 py-2 text-xs font-black uppercase tracking-wider text-[#FFF7EB] shadow-[0_3px_0_#12100E] transition hover:bg-[#F5A623] hover:text-[#12100E] active:translate-y-0.5">
           Copy Code
         </button>
+        <button id="btn-copy-link-guest" type="button"
+          class="rounded-full border-2 border-[#12100E] bg-[#0D1117] px-5 py-2 text-xs font-black uppercase tracking-wider text-[#FFF7EB] shadow-[0_3px_0_#12100E] transition hover:bg-[#F5A623] hover:text-[#12100E] active:translate-y-0.5">
+          Copy Invite Link
+        </button>
+      </div>
+      <span id="invite-link-guest" hidden></span>
+      <p id="invite-hint-guest" hidden class="mx-auto max-w-[40ch] text-[11px] font-bold leading-snug text-[#F5A623]">
+        Heads up: this address only works on this device. Invite phones from the live https link.
+      </p>
+      <div class="flex justify-center">
+        <button id="btn-qr-guest" type="button"
+          class="rounded-full border-2 border-[#12100E] bg-[#0D1117] px-5 py-2 text-xs font-black uppercase tracking-wider text-[#FFF7EB] shadow-[0_3px_0_#12100E] transition hover:bg-[#F5A623] hover:text-[#12100E] active:translate-y-0.5">
+          📱 Show Room QR
+        </button>
       </div>
       <p id="wait-status-guest" class="text-base font-black text-[#FFF7EB] sm:text-lg">
-        Synchronizing brainwaves...
+        Waiting for everyone to get ready…
       </p>
       <div class="flex items-center justify-center gap-2">
-        <input id="guest-name" type="text" maxlength="20" autocomplete="off"
-          class="min-w-0 flex-1 rounded-2xl border-2 border-[#12100E] bg-[#0D1117] px-4 py-2 text-sm font-black text-[#FFF7EB] outline-none transition focus:border-[#F5A623] sm:text-base" />
+        <input id="guest-name" type="text" maxlength="20" autocomplete="off" placeholder="Your nickname" aria-label="Your nickname"
+          class="min-w-0 flex-1 rounded-2xl border-2 border-[#12100E] bg-[#0D1117] px-4 py-2 text-sm font-black text-[#FFF7EB] outline-none transition placeholder:text-slate-600 focus:border-[#F5A623] sm:text-base" />
         <button id="btn-guest-name" type="button"
           class="shrink-0 rounded-2xl border-2 border-[#12100E] bg-[#F5A623] px-4 py-2 text-sm font-black text-[#12100E] shadow-[0_3px_0_#12100E] transition hover:brightness-110 active:translate-y-0.5">
-          Set
+          Save
         </button>
       </div>
     </div>
@@ -61,7 +97,7 @@
     <div class="bezel rise-in stagger-2 w-full lg:col-span-1 lg:row-span-2">
     <div class="halftone w-full space-y-3 rounded-3xl border-4 border-[#12100E] bg-[#161D27] p-5 shadow-[0_6px_0_#12100E] sm:p-6">
       <div class="flex items-center justify-between border-b-2 border-[#12100E] pb-2">
-        <span class="text-xs font-black uppercase tracking-wider text-[#F5A623]">Victim Roster</span>
+        <span class="text-xs font-black uppercase tracking-wider text-[#F5A623]">Players</span>
         <p id="player-count" class="text-xs font-black tabular-nums text-slate-300">0 / 8 Joined</p>
       </div>
       <div id="roster" class="flex w-full flex-col gap-2 pt-1 text-left"></div>
@@ -72,19 +108,19 @@
     <div class="rise-in stagger-3 flex w-full flex-col items-center gap-3 lg:col-span-1">
       <button id="btn-ready" type="button" hidden
         class="w-full rounded-2xl border-4 border-[#12100E] bg-[#29B6F6] px-6 py-4 text-xl font-black text-[#12100E] shadow-[0_6px_0_#12100E] transition hover:brightness-110 active:translate-y-1 active:shadow-[0_1px_0_#12100E] disabled:cursor-not-allowed disabled:opacity-50 sm:text-2xl">
-        I AM READY TO EXPLODE 💣
+        I'm Ready ✓
       </button>
 
       <p id="ready-badge" hidden
         class="rounded-full border-2 border-[#12100E] bg-[#FF5A1F] px-4 py-1.5 text-xs font-black uppercase text-[#12100E] shadow-[0_3px_0_#12100E] animate-bounce">
-        All other players are waiting on you, slacker!
+        Everyone is ready. Waiting on you!
       </p>
     </div>
 
     <!-- Cancel / Exit Button -->
     <button id="btn-cancel-multi" type="button"
       class="w-full shrink-0 rounded-2xl border-2 border-[#12100E] bg-[#0D1117] px-6 py-3 text-sm font-black text-[#D72638] transition hover:bg-[#D72638] hover:text-[#FFF7EB] active:scale-98 lg:col-span-2 lg:mx-auto lg:max-w-md">
-      Escape to Safety
+      Leave Room
     </button>
   </div>
 </section>

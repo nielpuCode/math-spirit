@@ -26,18 +26,20 @@ party.addPlayer(room, 'g2', final);
 assert.ok(!/^pen-ink sucker$/i.test(party.names(room)[2]), `suffixed: ${final}`);
 assert.equal(new Set(party.names(room).map(names.normalize)).size, 3);
 
-// answers accumulate; late dupes for a finished player are ignored
-assert.ok(party.applyAnswered(room, 'g1', { correct: true, ms: 4000 }));
-assert.ok(party.applyAnswered(room, 'g1', { correct: false, ms: 9000, done: true }));
+// answers accumulate; durations add up into a comparable total;
+// late dupes for a finished player are ignored
+assert.ok(party.applyAnswered(room, 'g1', { correct: true, dms: 4000 }));
+assert.ok(party.applyAnswered(room, 'g1', { correct: false, dms: 9000, done: true }));
 assert.equal(room.players.g1.answered, 2);
 assert.equal(room.players.g1.correct, 1);
+assert.equal(room.players.g1.ms, 13000);
 assert.equal(room.players.g1.done, true);
-assert.equal(party.applyAnswered(room, 'g1', { correct: true, ms: 1 }), false);
+assert.equal(party.applyAnswered(room, 'g1', { correct: true, dms: 1 }), false);
 assert.equal(party.applyAnswered(room, 'nope', { correct: true }), false);
 assert.equal(party.allDone(room), false);
 
-party.applyAnswered(room, 'host', { correct: true, ms: 8000, done: true });
-party.applyAnswered(room, 'g2', { correct: true, ms: 7000, done: true });
+party.applyAnswered(room, 'host', { correct: true, dms: 8000, done: true });
+party.applyAnswered(room, 'g2', { correct: true, dms: 7000, done: true });
 assert.equal(party.allDone(room), true);
 
 // roster round-trips through plain JSON (what actually goes over the wire)

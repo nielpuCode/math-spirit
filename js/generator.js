@@ -1,4 +1,4 @@
-// ponytail: pure generator — no DOM. Ceiling: heuristic traps, not real learner-error data.
+// ponytail: pure generator - no DOM. Ceiling: heuristic traps, not real learner-error data.
 // Upgrade path: log missed answers, weight traps by frequency.
 (function (root) {
   const OPS = ['+', '−', '×', '÷'];
@@ -74,8 +74,10 @@
     return pick(pairs);
   }
 
-  function generateProblem(lang) {
-    return pick(MIX)(langOf(lang));
+  function generateProblem(lang, difficulty) {
+    const hard = difficulty === 'hard';
+    const L = langOf(lang);
+    return pick(hard ? HARD_MIX : NORMAL_MIX)(L, hard);
   }
 
   // ---- Real-life bilingual kinds: percent, discount/fee, rupiah, split ----
@@ -111,12 +113,14 @@
   }
 
   const PCT_TENTHS = [50, 75, 100, 125, 150, 200, 250, 300, 500, 750];
+  const WHOLE_TENTHS = [50, 100, 150, 200, 250, 300, 500]; // normal: no decimal percents
 
-  function genPct(lang) {
+  function genPct(lang, hard) {
     const L = langOf(lang);
     const W = WORDS[L];
+    const choices = hard ? PCT_TENTHS : WHOLE_TENTHS;
     for (let i = 0; i < 60; i++) {
-      const t = pick(PCT_TENTHS);
+      const t = pick(choices);
       const ans = randInt(6, 240);
       if ((ans * 1000) % t !== 0) continue;
       const base = (ans * 1000) / t;
@@ -145,54 +149,65 @@
 
   const OFF_TENTHS = [50, 75, 100, 125, 150, 200, 250, 500];
 
-  function genOff(lang) {
+  // Normal mode: clean thousands only, never a 47.623-style price tag.
+  function round1000(n) {
+    return Math.max(1000, Math.round(n / 1000) * 1000);
+  }
+
+  function genOff(lang, hard) {
     const L = langOf(lang);
     const W = WORDS[L];
-    const price = charmPrice();
+    const price = hard ? charmPrice() : round1000(charmPrice());
     const t = pick(OFF_TENTHS);
     return { op: 'off', a: price, b: t, answer: pctFinal(price, t, true), lang: L, fmt: L,
       text: fmt(price, L) + ' −' + fmtPct(t, L), sub: W.off };
   }
 
-  function genFee(lang) {
+  function genFee(lang, hard) {
     const L = langOf(lang);
     const W = WORDS[L];
-    const price = charmPrice();
+    const price = hard ? charmPrice() : round1000(charmPrice());
     const t = pick(OFF_TENTHS);
     return { op: 'fee', a: price, b: t, answer: pctFinal(price, t, false), lang: L, fmt: L,
       text: fmt(price, L) + ' +' + fmtPct(t, L), sub: W.fee };
   }
 
-  function genRpAdd(lang) {
+  function genRpAdd(lang, hard) {
     const L = langOf(lang);
     const W = WORDS[L];
-    const a = randInt(2000, 99999); // text budget: '99.999 + 99.999' = 15 chars
-    const b = randInt(2000, 99999);
+    // text budget: '49.000 + 49.000' = 15 chars
+    const a = hard ? randInt(2000, 99999) : randInt(2, 49) * 1000;
+    const b = hard ? randInt(2000, 99999) : randInt(2, 49) * 1000;
     return { op: '+', a: a, b: b, answer: a + b, lang: L, fmt: L,
       text: fmt(a, L) + ' + ' + fmt(b, L), sub: W.groceries };
   }
 
-  function genRpSub(lang) {
+  function genRpSub(lang, hard) {
     const L = langOf(lang);
     const W = WORDS[L];
-    const a = randInt(5000, 99999); // text budget: '99.999 − 99.999' = 15 chars
-    const b = randInt(1000, a);
+    // text budget: '49.000 − 49.000' = 15 chars
+    const a = hard ? randInt(5000, 99999) : randInt(5, 49) * 1000;
+    const b = hard ? randInt(1000, a) : randInt(1, a / 1000) * 1000;
     return { op: '−', a: a, b: b, answer: a - b, lang: L, fmt: L,
       text: fmt(a, L) + ' − ' + fmt(b, L), sub: W.change };
   }
 
-  function genSplit(lang) {
+  function genSplit(lang, hard) {
     const L = langOf(lang);
     const W = WORDS[L];
     const n = randInt(2, 9);
-    const q = randInt(2000, 30000);
+    const q = hard ? randInt(2000, 30000) : randInt(2, 30) * 1000;
     return { op: '÷', a: n * q, b: n, answer: q, lang: L, fmt: L,
       text: fmt(n * q, L) + ' ÷ ' + n, sub: W.split };
   }
 
-  // ~55% classic head-math, ~45% real-life. Tune the ratio here.
-  const MIX = [genAdd, genSub, genMul, genDiv, genAdd, genSub, genMul,
-    genPct, genOff, genFee, genRpAdd, genRpSub, genSplit];
+  // Normal: speed mode, easy operations only (add/sub plus rounded rupiah
+  // and bill splits). Hard: ×/÷/percent/discount/fee come up ~70% of
+  // the time. Tune the ratios here.
+  const NORMAL_MIX = [genAdd, genAdd, genAdd, genAdd, genSub, genSub, genSub, genSub,
+    genRpAdd, genRpAdd, genRpSub, genRpSub, genSplit, genSplit];
+  const HARD_MIX = [genMul, genMul, genMul, genDiv, genDiv, genPct, genPct, genOff, genOff,
+    genFee, genFee, genAdd, genSub, genRpAdd, genRpSub, genSplit];
 
   function collectTraps(problem) {
     const a = problem.a;

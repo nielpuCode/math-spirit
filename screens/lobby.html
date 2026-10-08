@@ -5,10 +5,10 @@
     <!-- Header -->
     <header class="rise-in stagger-1 shrink-0 text-center">
       <span class="inline-block -rotate-2 rounded-full border-2 border-[#12100E] bg-[#D72638] px-3 py-1 text-xs font-black uppercase tracking-wider text-[#FFF7EB] shadow-[0_3px_0_#12100E]">
-        Squad Carnage
+        Multiplayer
       </span>
       <h2 class="mt-2 text-3xl font-black text-[#FFF7EB] sm:text-4xl md:text-5xl">
-        Kindergarten Reckoning
+        Play With Friends
       </h2>
       <p class="mx-auto mt-2 max-w-[42ch] rounded-2xl border-2 border-dashed border-slate-700 bg-[#161D27]/80 px-4 py-2 text-xs font-bold text-[#F6E6C9]/80 sm:text-sm">
         Bring all of your already brain-rotted friends here
@@ -18,7 +18,7 @@
     <!-- Player Profile Tag -->
     <div class="rise-in stagger-2 shrink-0 rounded-3xl border-4 border-[#12100E] bg-[#161D27] p-4 shadow-[0_6px_0_#12100E] sm:p-5">
       <label for="player-name" class="mb-2 block text-xs font-black uppercase tracking-wider text-[#F5A623] sm:text-sm">
-        Your Display Name
+        Your Nickname
       </label>
       <div class="flex items-center gap-2">
         <input id="player-name" type="text" autocomplete="off" maxlength="20" placeholder="Sentient Wet Sock"
@@ -27,7 +27,7 @@
           class="h-12 w-12 shrink-0 rounded-2xl border-2 border-[#12100E] bg-[#0D1117] text-2xl shadow-[0_4px_0_#12100E] transition active:translate-y-0.5 active:shadow-none">🎲</button>
       </div>
       <p class="mt-2 text-center text-[11px] font-bold text-slate-500">
-        Saved on this browser. If two people pick the same name, someone gets numbers added.
+        Saved on this device. If a name is taken, numbers get added.
       </p>
     </div>
 
@@ -38,14 +38,14 @@
       <div class="flex flex-col justify-between rounded-3xl border-4 border-[#12100E] bg-[#161D27] p-4 shadow-[0_6px_0_#12100E] sm:p-5 space-y-4 lg:col-span-3">
         <div>
           <div class="mb-3 flex items-center justify-between">
-            <span class="text-xs font-black uppercase tracking-wider text-[#29B6F6] sm:text-sm">👑 Run the Show</span>
+            <span class="text-xs font-black uppercase tracking-wider text-[#29B6F6] sm:text-sm">👑 Host a Game</span>
             <span class="rounded bg-[#29B6F6]/10 px-2 py-0.5 text-[10px] font-extrabold text-[#29B6F6] ring-1 ring-[#29B6F6]/30">Host</span>
           </div>
 
           <!-- Question Count Dial -->
           <div class="mb-4">
             <label for="multi-q-count" class="mb-1.5 block text-xs font-bold text-slate-300">
-              Questions of agony
+              Number of questions
             </label>
             <div class="flex items-center gap-2">
               <button id="q-minus" type="button"
@@ -56,14 +56,14 @@
                 class="h-11 w-11 shrink-0 rounded-2xl border-2 border-[#12100E] bg-[#0D1117] text-2xl font-black text-[#FFF7EB] transition hover:bg-[#FF5A1F] hover:text-[#12100E] active:scale-95 sm:h-12 sm:w-12">+</button>
             </div>
             <p class="mt-1 text-center text-[11px] font-bold text-slate-500">
-              Locking in <span id="q-display" class="font-extrabold text-[#29B6F6]">10</span> Questions
+              Playing <span id="q-display" class="font-extrabold text-[#29B6F6]">10</span> questions
             </p>
           </div>
 
           <!-- Grace Countdown Dial -->
           <div>
             <label for="grace-count" class="mb-1.5 block text-xs font-bold text-slate-300">
-              Panic buzzer countdown
+              Hurry-up timer
             </label>
             <div class="flex items-center gap-2">
               <button id="g-minus" type="button"
@@ -74,14 +74,23 @@
                 class="h-11 w-11 shrink-0 rounded-2xl border-2 border-[#12100E] bg-[#0D1117] text-2xl font-black text-[#FFF7EB] transition hover:bg-[#F5A623] hover:text-[#12100E] active:scale-95 sm:h-12 sm:w-12">+</button>
             </div>
             <p class="mt-1 text-center text-[11px] font-bold text-slate-500">
-              <span id="g-display" class="font-extrabold text-[#F5A623]">3s per question (0 = chill mode)</span>
+              <span id="g-display" class="font-extrabold text-[#F5A623]">3 seconds to answer after someone else does (0 = off)</span>
             </p>
           </div>
+
+          <label class="flex cursor-pointer select-none items-center justify-between gap-3 rounded-2xl border-2 border-[#12100E] bg-[#0D1117] px-4 py-2.5 transition hover:border-slate-600">
+            <div class="flex items-center gap-3">
+              <input id="host-hard" type="checkbox"
+                class="h-6 w-6 rounded-lg border-2 border-[#12100E] accent-[#29B6F6] transition cursor-pointer" />
+              <span class="text-sm font-black text-[#FFF7EB] sm:text-base">Hard Mode</span>
+            </div>
+            <span class="text-[11px] font-bold text-slate-500">Harder questions, more often</span>
+          </label>
         </div>
 
         <button id="btn-create-room" type="button"
           class="w-full rounded-2xl border-4 border-[#12100E] bg-[#29B6F6] px-5 py-3.5 text-lg font-black text-[#12100E] shadow-[0_5px_0_#12100E] transition hover:brightness-110 active:translate-y-1 active:shadow-[0_1px_0_#12100E] sm:text-xl">
-          Create a Room 🎪
+          Create Room
         </button>
       </div>
 
@@ -89,26 +98,26 @@
       <div class="flex flex-col justify-between rounded-3xl border-4 border-[#12100E] bg-[#161D27] p-4 shadow-[0_6px_0_#12100E] sm:p-5 space-y-4 lg:col-span-2">
         <div>
           <div class="mb-3 flex items-center justify-between">
-            <span class="text-xs font-black uppercase tracking-wider text-[#F5A623] sm:text-sm">🚪 Sneak In</span>
+            <span class="text-xs font-black uppercase tracking-wider text-[#F5A623] sm:text-sm">🚪 Join a Game</span>
             <span class="rounded bg-[#F5A623]/10 px-2 py-0.5 text-[10px] font-extrabold text-[#F5A623] ring-1 ring-[#F5A623]/30">Guest</span>
           </div>
 
           <div>
             <label for="multi-code" class="mb-1.5 block text-xs font-bold text-slate-300">
-              Secret 6-letter room code
+              Room code (6 letters)
             </label>
             <input id="multi-code" type="text" inputmode="text" autocomplete="off" autocapitalize="characters"
               maxlength="6" placeholder="B4RB13"
               class="w-full rounded-2xl border-2 border-[#12100E] bg-[#0D1117] px-4 py-3 text-center text-2xl font-black uppercase tracking-[0.3em] text-[#F5A623] outline-none transition placeholder:tracking-normal placeholder:text-slate-700 focus:border-[#F5A623] sm:py-4 sm:text-3xl" />
           </div>
           <p class="mt-2 text-center text-xs text-slate-400">
-            Paste the code the host dropped in your chat before they get tired of waiting.
+            Ask the host for the code, then type it here.
           </p>
         </div>
 
         <button id="btn-join-room" type="button"
           class="w-full rounded-2xl border-4 border-[#12100E] bg-[#F5A623] px-5 py-3.5 text-lg font-black text-[#12100E] shadow-[0_5px_0_#12100E] transition hover:brightness-110 active:translate-y-1 active:shadow-[0_1px_0_#12100E] sm:text-xl">
-          Join Room 🥷
+          Join Room
         </button>
       </div>
 
@@ -120,7 +129,7 @@
     <!-- Back Button -->
     <button id="btn-multi-back" type="button"
       class="w-full shrink-0 rounded-2xl border-2 border-[#12100E] bg-[#161D27] px-6 py-3 text-sm font-black text-slate-300 transition hover:bg-[#0D1117] hover:text-[#FFF7EB] active:scale-98 sm:text-base">
-      Never mind, I'm scared 🏃💨
+      ← Back
     </button>
   </div>
 </section>

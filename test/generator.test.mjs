@@ -20,7 +20,7 @@ const seenOp = {};
 const seenLifeLang = {};
 for (let i = 0; i < 1600; i++) {
   const lang = i % 2 ? 'en' : 'id';
-  const p = generateProblem(lang);
+  const p = generateProblem(lang, 'hard');
   const choices = generateChoices(p);
   seenOp[p.op] = true;
 
@@ -73,5 +73,33 @@ for (const op of ['%', 'off', 'fee']) {
   assert.ok(seenLifeLang[op + ':id'], op + ' in ID');
   assert.ok(seenLifeLang[op + ':en'], op + ' in EN');
 }
+
+// normal mode: speed-friendly easy ops only, rounded numbers, never charm
+// prices or decimal percents
+for (let i = 0; i < 800; i++) {
+  const lang = i % 2 ? 'en' : 'id';
+  const p = generateProblem(lang, 'normal');
+  const choices = generateChoices(p);
+  assert.ok(Number.isInteger(p.answer), 'normal integer');
+  assert.equal(choices.length, 5);
+  assert.ok(choices.includes(p.answer));
+  if (!p.text) assert.ok(['+', '−'].includes(p.op), `normal classic easy: ${p.op}`);
+  else assert.ok(['+', '−', '÷'].includes(p.op), `normal story easy: ${p.op}`);
+  if (['off', 'fee'].includes(p.op)) assert.equal(p.a % 1000, 0, `rounded price: ${p.a}`);
+  if (p.op === '%') assert.equal(p.a % 10, 0, `whole percent: ${p.a}`);
+  if (p.op === '+' && p.text) assert.ok(p.a % 1000 === 0 && p.b % 1000 === 0, 'rounded rupiah');
+  if (p.op === '−' && p.text) assert.ok(p.a % 1000 === 0 && p.b % 1000 === 0, 'rounded change');
+  if (p.op === '÷' && p.text) assert.equal(p.answer % 1000, 0, 'rounded split');
+  if (p.text) assert.ok(p.text.length <= 16, `fits phone: ${p.text}`);
+}
+
+// hard mode: tricky kinds (x, /, %, off, fee) dominate instead of plain +/-
+let hardKinds = 0;
+for (let i = 0; i < 600; i++) {
+  const p = generateProblem(i % 2 ? 'en' : 'id', 'hard');
+  assert.ok(Number.isInteger(p.answer), 'hard integer');
+  if (['×', '÷', '%', 'off', 'fee'].includes(p.op)) hardKinds++;
+}
+assert.ok(hardKinds / 600 > 0.6, `hard intensity: ${hardKinds}/600`);
 
 console.log('generator ok: classic + bilingual real-life kinds');

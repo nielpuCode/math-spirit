@@ -1,0 +1,70 @@
+<!-- TUTORIAL / HOW TO PLAY -->
+<section id="screen-tutorial" hidden class="relative flex min-h-0 w-full flex-1 flex-col overflow-y-auto overscroll-contain px-4 py-4 sm:py-6">
+  <div class="mx-auto flex w-full max-w-md flex-col gap-4 pb-10 sm:max-w-xl md:max-w-2xl">
+
+    <header class="rise-in stagger-1 shrink-0 text-center">
+      <span class="inline-block -rotate-2 rounded-full border-2 border-[#12100E] bg-[#34D399] px-3 py-1 text-xs font-black uppercase tracking-wider text-[#12100E] shadow-[0_3px_0_#12100E]">
+        Guide
+      </span>
+      <h2 class="mt-2 text-3xl font-black text-[#FFF7EB] sm:text-4xl">
+        How to Play
+      </h2>
+      <p class="mx-auto mt-2 max-w-[46ch] text-xs font-bold text-[#F6E6C9]/80 sm:text-sm">
+        Answer math questions as fast as you can. Tap one of the 6 answers. Fast and correct wins.
+      </p>
+    </header>
+
+    <!-- Solo -->
+    <div class="rise-in stagger-2 rounded-3xl border-4 border-[#12100E] bg-[#161D27] p-4 shadow-[0_6px_0_#12100E] sm:p-5">
+      <p class="mb-2 text-xs font-black uppercase tracking-wider text-[#FF5A1F] sm:text-sm">▶ Playing Solo</p>
+      <ol class="list-decimal space-y-1.5 pl-5 text-left text-xs font-bold leading-relaxed text-[#F6E6C9] sm:text-sm">
+        <li><b>Number of Questions</b>: how many questions one game has (1-500).</li>
+        <li><b>Endless Mode</b>: turn on to play without stopping.</li>
+        <li><b>Hard Mode</b>: turn on for trickier questions (harder kinds show up more often). The host's choice sets the whole room.</li>
+        <li>Tap <b>Play Solo</b>, then tap an answer for each question.</li>
+        <li>Tap <b>Play Again</b> for another round, or <b>Home</b> to go back.</li>
+      </ol>
+    </div>
+
+    <!-- Friends: host -->
+    <div class="rise-in stagger-3 rounded-3xl border-4 border-[#12100E] bg-[#161D27] p-4 shadow-[0_6px_0_#12100E] sm:p-5">
+      <p class="mb-2 text-xs font-black uppercase tracking-wider text-[#29B6F6] sm:text-sm">👑 Hosting (Create Room)</p>
+      <ol class="list-decimal space-y-1.5 pl-5 text-left text-xs font-bold leading-relaxed text-[#F6E6C9] sm:text-sm">
+        <li>Type your <b>nickname</b> (🎲 gives you a random one).</li>
+        <li>Set the <b>number of questions</b> and the <b>hurry-up timer</b>.</li>
+        <li>Tap <b>Create Room</b> to get a 6-letter <b>room code</b>.</li>
+        <li>Tap <b>Copy Code</b> or <b>Copy Invite Link</b> and send it to your friends. <b>Show Room QR</b> works too.</li>
+      </ol>
+    </div>
+
+    <!-- Friends: guest -->
+    <div class="rise-in stagger-3 rounded-3xl border-4 border-[#12100E] bg-[#161D27] p-4 shadow-[0_6px_0_#12100E] sm:p-5">
+      <p class="mb-2 text-xs font-black uppercase tracking-wider text-[#F5A623] sm:text-sm">🚪 Joining a Friend's Room</p>
+      <ol class="list-decimal space-y-1.5 pl-5 text-left text-xs font-bold leading-relaxed text-[#F6E6C9] sm:text-sm">
+        <li>Type your <b>nickname</b>, type the <b>room code</b>, then tap <b>Join Room</b>.</li>
+        <li>Inside the room you can still change your nickname: type it and tap <b>Save</b>.</li>
+        <li>Tap <b>I'm Ready ✓</b>. The game starts when everyone is ready.</li>
+        <li>After the game: <b>Rematch</b> plays again with the same room, <b>Home</b> leaves.</li>
+      </ol>
+    </div>
+
+    <!-- Glossary -->
+    <div class="rise-in stagger-3 rounded-3xl border-4 border-[#12100E] bg-[#161D27] p-4 shadow-[0_6px_0_#12100E] sm:p-5">
+      <p class="mb-2 text-xs font-black uppercase tracking-wider text-[#F5A623] sm:text-sm">🔤 What Each Thing Means</p>
+      <ul class="space-y-1.5 text-left text-xs font-bold leading-relaxed text-[#F6E6C9] sm:text-sm">
+        <li><b>Room code</b>: 6 letters that identify one game room. Everyone in the room sees it.</li>
+        <li><b>Copy Invite Link / Show Room QR</b>: inside a room, anyone can share these. Opening the link (or scanning the QR) joins the room directly, no typing. Use the live https link, since a localhost/dev address only works on your own computer.</li>
+        <li><b>Players</b>: who is in the room right now (max 8). ✓ means that player is ready.</li>
+        <li><b>Hurry-up timer</b>: there is no fixed time per question. Take as long as you want, until someone else answers. Then everyone left gets this many seconds (0 = off), or the question locks in blank.</li>
+        <li><b>Quit / Leave</b>: stop the current game and exit.</li>
+        <li><b>Leaderboard</b>: final ranking. Most correct wins, then accuracy, then total answering time.</li>
+        <li><b>Share via QR Code</b>: shows a QR code so friends can open this page on their phones.</li>
+      </ul>
+    </div>
+
+    <button id="btn-tutorial-back" type="button"
+      class="w-full shrink-0 rounded-2xl border-2 border-[#12100E] bg-[#0D1117] px-6 py-3 text-sm font-black text-[#FFF7EB] transition hover:bg-[#FFF7EB] hover:text-[#12100E] active:scale-98 sm:text-base">
+      ← Back to Home
+    </button>
+  </div>
+</section>

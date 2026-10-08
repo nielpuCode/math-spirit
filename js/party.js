@@ -76,12 +76,16 @@
   }
 
   // One guest answer lands here on every client (directly, or via host relay).
+  // ms accumulates per-question answering times into a total every client can
+  // compare fairly (local deltas, never absolute timestamps). Addition
+  // commutes, so relay arrival order never changes the final standings.
   function applyAnswered(state, fromId, msg) {
     const p = state.players[fromId];
     if (!p || p.done) return false;
     p.answered += 1;
     if (msg && msg.correct) p.correct += 1;
-    if (msg && Number.isFinite(Number(msg.ms))) p.ms = Number(msg.ms);
+    const dms = msg ? Number(msg.dms) : NaN;
+    if (Number.isFinite(dms) && dms >= 0) p.ms += dms;
     if (msg && msg.done) p.done = true;
     return true;
   }

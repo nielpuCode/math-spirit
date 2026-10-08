@@ -35,7 +35,7 @@ assert.ok(inTable(roast.pick({ ...base, id: 'z', correct: 0, answered: 0, ms: 0,
 assert.ok(inTable(roast.pick({ ...base, id: 'z', correct: 5 }), 'PERFECT'), 'perfect');
 assert.ok(inTable(roast.pick({ ...base, id: 'z', correct: 4, rank: 1, firstCorrect: 4 }), 'WIN'), 'winner');
 assert.ok(inTable(roast.pick({ ...base, id: 'z', correct: 4, rank: 2, firstCorrect: 4 }), 'TIE'), 'tiebreak');
-// same score, different time — tiebreak sympathy at any depth, never bottom-fragged
+// same score, different time - tiebreak sympathy at any depth, never bottom-fragged
 assert.ok(inTable(roast.pick({ ...base, id: 't3', correct: 4, rank: 3, players: 3, firstCorrect: 4 }), 'TIE'), '3-way tie, last on time');
 assert.ok(inTable(roast.pick({ ...base, id: 'e', correct: 3, ms: 15000, rank: 2, players: 2, firstCorrect: 3 }), 'TIE'), 'exact 2P tie');
 // same finish, fewer correct at the bottom is still a genuine bottom frag
@@ -61,7 +61,7 @@ let h = roast.headline(
   [{ id: 'a', name: 'A', correct: 3, ms: 1000 }, { id: 'b', name: 'B', correct: 3, ms: 2000 }], 'b');
 assert.equal(h.title, '#2 of 2', 'same score slower time is a loss');
 assert.equal(h.cls, 'result-lose');
-assert.equal(h.note, 'Most correct wins');
+assert.equal(h.note, 'Most correct wins · ties: accuracy, then time');
 h = roast.headline(
   [{ id: 'a', name: 'A', correct: 3, ms: 1000 }, { id: 'b', name: 'B', correct: 3, ms: 2000 }], 'a');
 assert.equal(h.title, 'You Win!', 'faster time wins outright, no tie');
@@ -70,7 +70,7 @@ h = roast.headline(
   [{ id: 'a', name: 'A', correct: 3, ms: 1000 }, { id: 'b', name: 'B', correct: 3, ms: 1000 }], 'b');
 assert.equal(h.title, 'Tie for 1st!', 'exact tie shares the crown');
 assert.equal(h.cls, 'result-draw');
-assert.equal(h.note, 'Exact tie — same score, same time');
+assert.equal(h.note, 'Exact tie: same score, same time');
 h = roast.headline([{ id: 'a', name: 'A', correct: 3, ms: 1000 }], 'a');
 assert.equal(h.title, 'You Win!', 'solo board');
 assert.equal(h.note, '', 'no note on solo board');

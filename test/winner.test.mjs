@@ -9,6 +9,7 @@ assert.equal(decideWinner({ correct: 5, ms: 12000 }, { correct: 7, ms: 99000 }),
 assert.equal(decideWinner({ correct: 7, ms: 15000 }, { correct: 7, ms: 12000 }), 'b');
 assert.equal(decideWinner({ correct: 7, ms: 11000 }, { correct: 7, ms: 12000 }), 'a');
 assert.equal(decideWinner({ correct: 7, ms: 12000 }, { correct: 7, ms: 12000 }), 'draw');
+assert.equal(decideWinner({ correct: 7, answered: 7, ms: 15000 }, { correct: 7, answered: 10, ms: 8000 }), 'a');
 assert.equal(decideWinner({ correct: 9, ms: 5000, disconnected: true }, { correct: 1, ms: 99000 }), 'b');
 assert.equal(decideWinner({ correct: 1, ms: 99000 }, { correct: 9, ms: 5000, disconnected: true }), 'a');
 assert.equal(decideWinner({ correct: 4, ms: 8000, disconnected: true }, { correct: 4, ms: 8000, disconnected: true }), 'draw');
@@ -20,9 +21,9 @@ assert.match(code, /^[ABCDEFGHJKLMNPQRSTUVWXYZ23456789]{6}$/);
 console.log('winner ok');
 
 const board = rank([
-  { id: 'c', name: 'C', correct: 5, ms: 9000 },
-  { id: 'a', name: 'A', correct: 7, ms: 15000 },
-  { id: 'b', name: 'B', correct: 7, ms: 12000 },
+  { id: 'c', name: 'C', correct: 5, answered: 10, ms: 9000 },
+  { id: 'a', name: 'A', correct: 7, answered: 10, ms: 8000 },
+  { id: 'b', name: 'B', correct: 7, answered: 7, ms: 15000 },
 ]);
 assert.deepEqual(board.map((p) => p.id), ['b', 'a', 'c']);
 assert.deepEqual(rank([]), []);

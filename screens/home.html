@@ -33,9 +33,9 @@
           <div>
             <div class="mb-2 flex items-center justify-between">
               <label for="q-count" class="text-xs font-black uppercase tracking-wider text-[#F5A623] sm:text-sm">
-                Question Dose
+                Number of Questions
               </label>
-              <span class="text-[11px] font-bold text-slate-400">Max 500 if you hate yourself</span>
+              <span class="text-[11px] font-bold text-slate-400">Between 1 and 500</span>
             </div>
             <input id="q-count" type="number" min="1" max="500" value="10"
               class="w-full rounded-2xl border-2 border-[#12100E] bg-[#0D1117] px-4 py-3 text-2xl font-black tabular-nums text-[#FFF7EB] outline-none transition focus:border-[#F5A623] focus:ring-2 focus:ring-[#F5A623]/30 sm:py-3.5 sm:text-3xl" />
@@ -45,10 +45,21 @@
             <div class="flex items-center gap-3">
               <input id="q-infinite" type="checkbox"
                 class="h-6 w-6 rounded-lg border-2 border-[#12100E] accent-[#FF5A1F] transition cursor-pointer" />
-              <span class="text-base font-black text-[#FFF7EB] sm:text-lg">Infinite Brainrot Run</span>
+              <span class="text-base font-black text-[#FFF7EB] sm:text-lg">Endless Mode</span>
             </div>
             <span class="rounded-full bg-[#FF5A1F]/20 px-1.5 py-0.5 text-[10px] font-black uppercase text-[#FF5A1F] ring-1 ring-[#FF5A1F]/40">
-              No Mercy
+              Never Ends
+            </span>
+          </label>
+
+          <label class="flex cursor-pointer select-none items-center justify-between gap-3 rounded-2xl border-2 border-[#12100E] bg-[#0D1117] px-2 py-3 transition hover:border-slate-600 sm:py-3.5">
+            <div class="flex items-center gap-3">
+              <input id="q-hard" type="checkbox"
+                class="h-6 w-6 rounded-lg border-2 border-[#12100E] accent-[#FF5A1F] transition cursor-pointer" />
+              <span class="text-base font-black text-[#FFF7EB] sm:text-lg">Hard Mode</span>
+            </div>
+            <span class="rounded-full bg-[#FF5A1F]/20 px-1.5 py-0.5 text-[10px] font-black uppercase text-[#FF5A1F] ring-1 ring-[#FF5A1F]/40">
+              Harder
             </span>
           </label>
 
@@ -63,7 +74,7 @@
           </div>
 
           <p class="text-xs leading-relaxed text-slate-400 sm:text-sm">
-            Fixed rounds give you a report card. Infinite mode just keeps going until you give up.
+            Set how many questions to play, or turn on Endless Mode to keep going. Hard Mode brings trickier questions more often.
           </p>
         </div>
       </div>
@@ -73,17 +84,22 @@
     <div class="rise-in stagger-3 flex flex-col gap-3 lg:col-span-2">
       <button id="btn-play" type="button"
         class="w-full rounded-2xl border-4 border-[#12100E] bg-[#FF5A1F] px-6 py-3.5 text-xl font-black text-[#12100E] shadow-[0_6px_0_#12100E] transition hover:brightness-110 active:translate-y-1 active:shadow-[0_2px_0_#12100E] sm:py-4 sm:text-2xl">
-        DETONATE SOLO 🧨
+        ▶ Play Solo
       </button>
 
       <button id="btn-multi" type="button"
         class="w-full rounded-2xl border-4 border-[#12100E] bg-[#29B6F6] px-4 py-3 text-lg font-black text-[#12100E] shadow-[0_6px_0_#12100E] transition hover:brightness-110 active:translate-y-1 active:shadow-[0_2px_0_#12100E] sm:py-3.5 sm:text-xl">
-        DRAG YOUR FRIENDS HERE 💀
+        👥 Play With Friends
       </button>
 
       <button id="btn-qr" type="button"
         class="w-full rounded-2xl border-2 border-[#12100E] bg-[#0D1117] px-4 py-2.5 text-sm font-black text-[#FFF7EB] transition hover:bg-[#FFF7EB] hover:text-[#12100E] active:scale-95 sm:text-base">
-        📱 SCAN TO PLAY
+        📱 Share via QR Code
+      </button>
+
+      <button id="btn-howto" type="button"
+        class="w-full rounded-2xl border-2 border-[#12100E] bg-[#0D1117] px-4 py-2.5 text-sm font-black text-[#FFF7EB] transition hover:bg-[#FFF7EB] hover:text-[#12100E] active:scale-95 sm:text-base">
+        ❓ How to Play
       </button>
     </div>
 
